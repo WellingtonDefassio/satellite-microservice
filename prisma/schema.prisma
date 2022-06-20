@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Devices {
+  id               Int                  @id @default(autoincrement())
+  deviceID         String               @unique
+  satelliteGateway SatelliteGatewayType
+  status           OperationalStatus
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+}
+
+enum SatelliteGatewayType {
+  ORBCOMM_V2
+  ERIDIUM
+}
+
+enum OperationalStatus {
+  ACTIVE
+  DISABLED
+}
