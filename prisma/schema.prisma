@@ -10,22 +10,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Devices {
-  id               Int                  @id @default(autoincrement())
-  deviceID         String               @unique
-  satelliteGateway SatelliteGatewayType
-  status           OperationalStatus
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+model SendMessages {
+  id             Int                  @id @default(autoincrement())
+  message        String
+  deviceId       String
+  device         Devices              @relation(fields: [deviceId], references: [deviceId])
+  status         MessageStatus        @default(PENDING)
+  deviceGateWay  DeviceGateway
+  orbcommMessage SendMessagesOrbcomm?
 
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-enum SatelliteGatewayType {
+
+enum MessageStatus {
+  PENDING
+  SEND
+  TIMEOUT
+  FAILED
+}
+
+model SendMessagesOrbcomm {
+  id            Int                  @id @default(autoincrement())
+  sendMessageId Int                  @unique
+  sendMessage   SendMessages         @relation(fields: [sendMessageId], references: [id])
+  deviceId      String
+  fwdMessageIds BigInt
+  statusOrbcomm StatusOrbcommMessage
+
+}
+
+enum StatusOrbcommMessage {
+  SUBMITTED
+  RECEIVED
+  ERROR
+  DELIVERY_FAILED
+  TIMEOUT
+  CANCELLED
+  WAITING
+  UNKNOWN
+  TRANSMITTED
+
+
+}
+
+model Devices {
+  id               Int            @id @default(autoincrement())
+  deviceId         String         @unique
+  satelliteGateway DeviceGateway
+  status           DeviceStatus
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  messages         SendMessages[]
+
+}
+
+enum DeviceGateway {
   ORBCOMM_V2
   ERIDIUM
 }
 
-enum OperationalStatus {
+enum DeviceStatus {
   ACTIVE
   DISABLED
 }

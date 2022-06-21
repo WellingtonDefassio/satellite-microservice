@@ -13,7 +13,7 @@ import { SatelliteService } from './satellite.service';
 export class SatelliteController {
   constructor(private satelliteService: SatelliteService) {}
 
-  @Post()
+  @Post('message')
   @UsePipes(FetchByDeviceID, new ValidationPipe())
   async sendMessage(@Body() body: SendMessageDto) {
     console.log(body);
