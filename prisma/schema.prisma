@@ -19,7 +19,7 @@ model Devices {
   updatedAt        DateTime             @updatedAt
 
 }
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
 enum SatelliteGatewayType {
   ORBCOMM_V2
   ERIDIUM
