@@ -17,6 +17,6 @@ export class SatelliteController {
   @UsePipes(FetchByDeviceID, new ValidationPipe())
   async sendMessage(@Body() body: SendMessageDto) {
     console.log(body);
-    return this.satelliteService.sendMessage(body);
+    return this.satelliteService.redirectMessage(body);
   }
 }

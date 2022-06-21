@@ -15,7 +15,7 @@ export class DeviceExistsRule implements ValidatorConstraintInterface {
   async validate(value: string) {
     try {
       const device = await this.prisma.devices.findUnique({
-        where: { deviceID: value },
+        where: { deviceId: value },
       });
       if (!device) {
         return false;

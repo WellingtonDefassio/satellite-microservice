@@ -8,7 +8,7 @@ export class FetchByDeviceID implements PipeTransform {
   async transform(body: any, metadata: ArgumentMetadata) {
     const sendMessageDto = new SendMessageDto();
     const fetchDevice = await this.prisma.devices.findUnique({
-      where: { deviceID: body.deviceID },
+      where: { deviceId: body.deviceID },
     });
     const device = {
       id: fetchDevice.id,
