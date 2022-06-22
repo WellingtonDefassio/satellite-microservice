@@ -12,20 +12,22 @@ datasource db {
 
 model SendMessages {
   id             Int                  @id @default(autoincrement())
-  message        String
+  payload        String
   deviceId       String
   device         Devices              @relation(fields: [deviceId], references: [deviceId])
-  status         MessageStatus        @default(PENDING)
+  status         MessageStatus        @default(CREATED)
   deviceGateWay  DeviceGateway
   orbcommMessage SendMessagesOrbcomm?
-
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 enum MessageStatus {
-  PENDING
-  SEND
+  CREATED
+  SENDED
   TIMEOUT
   FAILED
+  CANCELLED
 }
 
 model SendMessagesOrbcomm {
@@ -49,8 +51,6 @@ enum StatusOrbcommMessage {
   WAITING
   UNKNOWN
   TRANSMITTED
-
-
 }
 
 model Devices {

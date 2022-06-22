@@ -8,23 +8,24 @@ export class OrbcommService {
   async uploadMessage(message) {
     console.log(message);
 
-    await this.prisma.sendMessagesOrbcomm.create({
+    const createdMessage = await this.prisma.sendMessagesOrbcomm.create({
       data: {
         deviceId: message.deviceId,
         sendMessageId: message.id,
       },
     });
+    console.log(createdMessage);
 
-    const { ErrorID, Statuses, NextStartUTC } = await this.http.axiosRef
-      .get('http://localhost:3001/fakeorbcomm/getobject')
-      .then(async (resolve) => {
-        return await resolve.data;
-      })
-      .catch(async (reject) => {
-        throw new Error(reject.message);
-      });
+    // const { ErrorID, Statuses, NextStartUTC } = await this.http.axiosRef
+    //   .get('http://localhost:3001/fakeorbcomm/getobject')
+    //   .then(async (resolve) => {
+    //     return await resolve.data;
+    //   })
+    //   .catch(async (reject) => {
+    //     throw new Error(reject.message);
+    //   });
 
-    console.log(Statuses[0].ReferenceNumber);
+    // console.log(Statuses[0].ReferenceNumber);
 
     // await this.prisma.sendMessagesOrbcomm.updateMany({
     //   where: { sendMessageId: { equals: Statuses.ReferenceNumber } },
