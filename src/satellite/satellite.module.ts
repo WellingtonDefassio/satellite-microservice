@@ -3,7 +3,6 @@ import { SatelliteService } from './satellite.service';
 import { SatelliteController } from './satellite.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { HttpModule } from '@nestjs/axios';
-import { ScheduleModule } from '@nestjs/schedule';
 import { OrbcommService } from './orbcomm/orbcomm.service';
 
 @Module({
