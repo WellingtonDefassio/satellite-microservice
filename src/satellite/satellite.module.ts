@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { SatelliteService } from './satellite.service';
 import { SatelliteController } from './satellite.controller';
 import { PrismaModule } from '../prisma/prisma.module';
-import { OrbcommModule } from './orbcomm/orbcomm.module';
-import { EridiumModule } from './eridium/eridium.module';
+import { HttpModule } from '@nestjs/axios';
+import { ScheduleModule } from '@nestjs/schedule';
+import { OrbcommService } from './orbcomm/orbcomm.service';
 
 @Module({
-  providers: [SatelliteService],
+  providers: [SatelliteService, OrbcommService],
   controllers: [SatelliteController],
-  imports: [PrismaModule, OrbcommModule, EridiumModule],
+  imports: [PrismaModule, HttpModule],
+  exports: [SatelliteService],
 })
 export class SatelliteModule {}

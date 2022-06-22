@@ -1,40 +1,44 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
-  async uploadMessage(message) {
-    console.log(message);
 
-    const createdMessage = await this.prisma.sendMessagesOrbcomm.create({
-      data: {
-        deviceId: message.deviceId,
-        sendMessageId: message.id,
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async uploadMessage() {
+    const listOfCreatedMessages = await this.prisma.sendMessages.findMany({
+      where: {
+        AND: [
+          { deviceGateWay: { equals: 'ORBCOMM_V2' } },
+          { status: { equals: 'CREATED' } },
+        ],
       },
     });
-    console.log(createdMessage);
 
-    // const { ErrorID, Statuses, NextStartUTC } = await this.http.axiosRef
-    //   .get('http://localhost:3001/fakeorbcomm/getobject')
-    //   .then(async (resolve) => {
-    //     return await resolve.data;
-    //   })
-    //   .catch(async (reject) => {
-    //     throw new Error(reject.message);
-    //   });
-
-    // console.log(Statuses[0].ReferenceNumber);
-
-    // await this.prisma.sendMessagesOrbcomm.updateMany({
-    //   where: { sendMessageId: { equals: Statuses.ReferenceNumber } },
-    //   data: { statusOrbcomm: { set: Statuses.State } },
-    // });
-
-    //TODO lógica para mandar a mensagem para a orbcomm
-    //Perguntar se deve ser feito em uma pasta v2
+    console.log(listOfCreatedMessages);
   }
+
+  // const { ErrorID, Statuses, NextStartUTC } = await this.http.axiosRef
+  //   .get('http://localhost:3001/fakeorbcomm/getobject')
+  //   .then(async (resolve) => {
+  //     return await resolve.data;
+  //   })
+  //   .catch(async (reject) => {
+  //     throw new Error(reject.message);
+  //   });
+
+  // console.log(Statuses[0].ReferenceNumber);
+
+  // await this.prisma.sendMessagesOrbcomm.updateMany({
+  //   where: { sendMessageId: { equals: Statuses.ReferenceNumber } },
+  //   data: { statusOrbcomm: { set: Statuses.State } },
+  // });
+
+  //TODO lógica para mandar a mensagem para a orbcomm
+  //Perguntar se deve ser feito em uma pasta v2
 
   async checkMessages() {
     //TODO lógica para check/atualizar os status das mensagens
