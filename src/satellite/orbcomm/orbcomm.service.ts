@@ -3,7 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { MessageStatus, StatusOrbcommMessage } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SendMessagesOrbcommDto, Status } from './dtos/upload-message.dto';
+import {
+  SendMessagesOrbcommDto,
+  StatusOrbcommEnum,
+} from './dtos/upload-message.dto';
 
 interface SubmitResponse {
   ErrorID: number;
@@ -105,7 +108,7 @@ export class OrbcommService {
       .catch(async (reject) => {
         throw new Error(reject.message);
       });
-
+    //TODO atualizar lista da tabela orbcomm.
     Statuses.map(
       async (objects) =>
         await this.prisma.sendMessages.update({
@@ -113,7 +116,8 @@ export class OrbcommService {
           data: {
             status: {
               set: this.transformStatus(
-                StatusOrbcommMessage[Status[objects.State]],
+                //TODO arrumar metodo de conversao ENUM.
+                StatusOrbcommMessage[StatusOrbcommEnum[objects.State]],
               ),
             },
           },
