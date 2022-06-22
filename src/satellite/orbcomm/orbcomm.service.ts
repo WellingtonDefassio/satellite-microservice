@@ -1,9 +1,10 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class OrbcommService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private http: HttpService) {}
   async uploadMessage(message) {
     console.log(message);
 
@@ -13,6 +14,22 @@ export class OrbcommService {
         sendMessageId: message.id,
       },
     });
+
+    const { ErrorID, Statuses, NextStartUTC } = await this.http.axiosRef
+      .get('http://localhost:3001/fakeorbcomm/getobject')
+      .then(async (resolve) => {
+        return await resolve.data;
+      })
+      .catch(async (reject) => {
+        throw new Error(reject.message);
+      });
+
+    console.log(Statuses[0].ReferenceNumber);
+
+    // await this.prisma.sendMessagesOrbcomm.updateMany({
+    //   where: { sendMessageId: { equals: Statuses.ReferenceNumber } },
+    //   data: { statusOrbcomm: { set: Statuses.State } },
+    // });
 
     //TODO lógica para mandar a mensagem para a orbcomm
     //Perguntar se deve ser feito em uma pasta v2

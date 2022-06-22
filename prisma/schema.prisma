@@ -33,7 +33,6 @@ model SendMessagesOrbcomm {
   sendMessageId Int                  @unique
   sendMessage   SendMessages         @relation(fields: [sendMessageId], references: [id])
   deviceId      String
-  fwdMessageIds BigInt?
   statusOrbcomm StatusOrbcommMessage?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
