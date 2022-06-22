@@ -6,7 +6,7 @@ import { SendMessageDto } from '../dtos/satellite.dto';
 export class SatelliteService {
   constructor(private prisma: PrismaService) {}
 
-  async redirectMessage(body: SendMessageDto) {
+  async rosterMessage(body: SendMessageDto) {
     await this.prisma.sendMessages.create({
       data: {
         payload: body.payload,
