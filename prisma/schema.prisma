@@ -18,41 +18,20 @@ model SendMessages {
   status         MessageStatus        @default(CREATED)
   deviceGateWay  DeviceGateway
   orbcommMessage SendMessagesOrbcomm?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-enum MessageStatus {
-  CREATED
-  SUBMITTED
-  SENDED
-  TIMEOUT
-  FAILED
-  CANCELLED
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 }
 
 model SendMessagesOrbcomm {
-  id            Int                  @id @default(autoincrement())
-  sendMessageId Int                  @unique
-  sendMessage   SendMessages         @relation(fields: [sendMessageId], references: [id])
+  id            Int                   @id @default(autoincrement())
+  sendMessageId Int                   @unique
+  sendMessage   SendMessages          @relation(fields: [sendMessageId], references: [id])
   deviceId      String
   fwrdMessageId BigInt
-  statusOrbcomm StatusOrbcommMessage? 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  statusOrbcomm OrbcommMessageStatus?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 
-}
-
-enum StatusOrbcommMessage {
-  SUBMITTED 
-  RECEIVED
-  ERROR
-  DELIVERY_FAILED
-  TIMEOUT
-  CANCELLED
-  WAITING
-  INVALID
-  TRANSMITTED
 }
 
 model Devices {
@@ -74,4 +53,25 @@ enum DeviceGateway {
 enum DeviceStatus {
   ACTIVE
   DISABLED
+}
+
+enum MessageStatus {
+  CREATED
+  SUBMITTED
+  SENDED
+  TIMEOUT
+  FAILED
+  CANCELLED
+}
+
+enum OrbcommMessageStatus {
+  SUBMITTED
+  RECEIVED
+  ERROR
+  DELIVERY_FAILED
+  TIMEOUT
+  CANCELLED
+  WAITING
+  INVALID
+  TRANSMITTED
 }
