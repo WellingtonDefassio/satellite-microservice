@@ -18,6 +18,5 @@ export class SendMessageDto {
   @IsNotEmpty()
   @IsString()
   payload: string;
-
   device: DeviceInfoDto;
 }

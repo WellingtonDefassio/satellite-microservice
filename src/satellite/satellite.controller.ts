@@ -16,7 +16,7 @@ export class SatelliteController {
   @Post('message')
   @UsePipes(FetchByDeviceID, new ValidationPipe())
   async sendMessage(@Body() body: SendMessageDto) {
-    console.log(body);
+    console.log('Controller body :' + JSON.stringify(body));
     return this.satelliteService.rosterMessage(body);
   }
 }

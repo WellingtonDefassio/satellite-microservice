@@ -24,7 +24,7 @@ interface Submission {
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron('15 * * * * *')
+  // @Cron('15 * * * * *')
   async uploadMessage() {
     console.log('SEND MESSAGES PROCESS.....');
 
@@ -83,7 +83,7 @@ export class OrbcommService {
     });
   }
 
-  @Cron('45 * * * * *')
+  // @Cron('45 * * * * *')
   async checkMessages() {
     //TODO lógica para check/atualizar os status das mensagens
 
