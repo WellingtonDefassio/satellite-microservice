@@ -1,4 +1,8 @@
 import { OrbcommMessageStatus } from '@prisma/client';
+import {
+  StatusesType,
+  Submission,
+} from '../interfaces/upload-messages.interfaces';
 
 export enum OrbcommStatusMap {
   SUBMITTED = 0,
@@ -10,23 +14,6 @@ export enum OrbcommStatusMap {
   WAITING = 6,
   INVALID = 7,
   TRANSMITTED = 8,
-}
-
-interface Statuses {
-  ForwardMessageID: number;
-  IsClosed: boolean;
-  State: number;
-  StateUTC: string;
-  ReferenceNumber: number;
-  Transport: string;
-  RegionName: string;
-}
-
-interface Submission {
-  ForwardMessageID: number;
-  DestinationID: string;
-  ErrorID: number;
-  UserMessageID: number;
 }
 
 export class SendMessagesOrbcommDto {
@@ -48,7 +35,7 @@ export class UpdateStatusMessagesOrbcommDto {
   sendMessageId: number;
   statusOrbcomm: OrbcommMessageStatus;
 
-  constructor(message: Statuses) {
+  constructor(message: StatusesType) {
     this.sendMessageId = message.ReferenceNumber;
     this.statusOrbcomm = OrbcommMessageStatus[OrbcommStatusMap[message.State]];
   }
