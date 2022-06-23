@@ -29,6 +29,7 @@ model SendMessagesOrbcomm {
   deviceId      String
   fwrdMessageId BigInt
   statusOrbcomm OrbcommMessageStatus?
+  errorId       Int?                  @default(0)
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
 

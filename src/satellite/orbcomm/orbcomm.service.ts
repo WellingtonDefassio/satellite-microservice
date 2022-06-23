@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { MessageStatus, StatusOrbcommMessage } from '@prisma/client';
+import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   SendMessagesOrbcommDto,
@@ -100,6 +100,8 @@ export class OrbcommService {
       take: 3,
     });
 
+    //TODO metodo que gera uma lista de menssagens para consulta na api posteriormente atualizada
+
     const { Statuses } = await this.http.axiosRef
       .post('http://localhost:3001/fakeorbcomm/getfwd')
       .then(async (resolve) => {
@@ -115,9 +117,8 @@ export class OrbcommService {
           where: { id: objects.ReferenceNumber },
           data: {
             status: {
-              set: this.transformStatus(
-                //TODO arrumar metodo de conversao ENUM.
-                StatusOrbcommMessage[StatusOrbcommEnum[objects.State]],
+              set: this.convertMessageStats(
+                OrbcommMessageStatus[objects.State],
               ),
             },
           },
@@ -125,21 +126,23 @@ export class OrbcommService {
     );
   }
 
-  transformStatus(status: StatusOrbcommMessage): MessageStatus {
-    if (status === 'RECEIVED' || status === 'TRANSMITTED') {
-      return 'SENDED';
-    }
-    if (status === 'SUBMITTED' || status === 'WAITING') {
-      return 'SUBMITTED';
-    }
-    if (status === 'TIMEOUT') {
-      return 'TIMEOUT';
-    }
-    if (status === 'DELIVERY_FAILED' || status === 'ERROR') {
-      return 'FAILED';
-    }
-    if (status === 'CANCELLED') {
-      return 'CANCELLED';
+  convertMessageStats(status: OrbcommMessageStatus): MessageStatus {
+    switch (status) {
+      case 'RECEIVED':
+      case 'TRANSMITTED':
+        return 'SENDED';
+      case 'SUBMITTED':
+      case 'WAITING':
+        return 'SUBMITTED';
+      case 'TIMEOUT':
+        return 'TIMEOUT';
+      case 'DELIVERY_FAILED':
+      case 'ERROR':
+        return 'FAILED';
+      case 'CANCELLED':
+        return 'CANCELLED';
+      default:
+        break;
     }
   }
 }
