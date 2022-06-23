@@ -138,7 +138,7 @@ export class OrbcommService {
     });
     messagesToUpdate.map(async (itemList) => {
       const elementToPersist = dataToUpDate.find(
-        (sendM) => sendM.sendMessageId === itemList.id,
+        (sendM) => sendM.sendMessageId === itemList.sendMessageId,
       );
       if (!elementToPersist) {
         console.log(elementToPersist);
@@ -153,32 +153,6 @@ export class OrbcommService {
         },
       });
     });
-
-    // Statuses.map(
-    //   async (objects) =>
-    //     await this.prisma.sendMessages.update({
-    //       where: { id: objects.ReferenceNumber },
-    //       data: {
-    //         status: {
-    //           set: this.convertMessageStats(
-    //             OrbcommMessageStatus[OrbcommStatusMap[objects.State]],
-    //           ),
-    //         },
-    //       },
-    //     }),
-    // );
-
-    //   Statuses.map(
-    //     async (objects) =>
-    //       await this.prisma.sendMessagesOrbcomm.update({
-    //         where: { sendMessageId: objects.ReferenceNumber },
-    //         data: {
-    //           statusOrbcomm:
-    //             OrbcommMessageStatus[OrbcommStatusMap[objects.State]],
-    //           errorId: objects.ErrorID,
-    //         },
-    //       }),
-    //   );
   }
 
   convertMessageStats(status: OrbcommMessageStatus): MessageStatus {
