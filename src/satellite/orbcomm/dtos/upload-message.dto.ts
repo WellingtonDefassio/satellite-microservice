@@ -12,6 +12,16 @@ export enum OrbcommStatusMap {
   TRANSMITTED = 8,
 }
 
+interface Statuses {
+  ForwardMessageID: number;
+  IsClosed: boolean;
+  State: number;
+  StateUTC: string;
+  ReferenceNumber: number;
+  Transport: string;
+  RegionName: string;
+}
+
 interface Submission {
   ForwardMessageID: number;
   DestinationID: string;
@@ -31,5 +41,15 @@ export class SendMessagesOrbcommDto {
     this.fwrdMessageId = message.ForwardMessageID;
     this.statusOrbcomm =
       OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]];
+  }
+}
+
+export class UpdateStatusMessagesOrbcommDto {
+  sendMessageId: number;
+  statusOrbcomm: OrbcommMessageStatus;
+
+  constructor(message: Statuses) {
+    this.sendMessageId = message.ReferenceNumber;
+    this.statusOrbcomm = OrbcommMessageStatus[OrbcommStatusMap[message.State]];
   }
 }

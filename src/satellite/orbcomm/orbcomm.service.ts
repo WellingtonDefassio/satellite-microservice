@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   OrbcommStatusMap,
   SendMessagesOrbcommDto,
+  UpdateStatusMessagesOrbcommDto,
 } from './dtos/upload-message.dto';
 
 interface SubmitResponse {
@@ -54,29 +55,27 @@ export class OrbcommService {
       (sub) => new SendMessagesOrbcommDto(sub),
     );
 
+    console.log('SENDING MESSAGES' + sendingMessages);
+
     listOfCreatedMessages.map(async (itemList) => {
-      const elementToPersist = sendingMessages.filter(
+      const elementToPersist = sendingMessages.find(
         (sendM) => sendM.sendMessageId === itemList.id,
       );
+      if (!elementToPersist) {
+        console.log('entrou');
+        return;
+      }
       await this.prisma.sendMessages.update({
-        where: { id: elementToPersist[0].sendMessageId },
+        where: { id: elementToPersist.sendMessageId },
         data: {
           status: {
-            set: this.convertMessageStats(elementToPersist[0].statusOrbcomm),
+            set: this.convertMessageStats(elementToPersist.statusOrbcomm),
           },
         },
       });
     });
 
-    // sendingMessages.map(
-    //   async (message) =>
-    //     await this.prisma.sendMessages.update({
-    //       where: { id: message.sendMessageId },
-    //       data: {
-    //         status: { set: this.convertMessageStats(message.statusOrbcomm) },
-    //       },
-    //     }),
-    // );
+    console.log('??????????????');
 
     await this.prisma.sendMessagesOrbcomm.createMany({
       data: sendingMessages,
@@ -97,8 +96,10 @@ export class OrbcommService {
           { statusOrbcomm: { equals: 'WAITING' } },
         ],
       },
-      take: 3,
+      take: 50,
     });
+
+    console.log(messagesToUpdate);
 
     //TODO metodo que gera uma lista de menssagens para consulta na api posteriormente atualizada
 
@@ -111,34 +112,73 @@ export class OrbcommService {
         throw new Error(reject.message);
       });
 
-    console.log(OrbcommMessageStatus[OrbcommStatusMap[Statuses[0].State]]);
+    const dataToUpDate = Statuses.map(
+      (objects) => new UpdateStatusMessagesOrbcommDto(objects),
+    );
+    console.log(dataToUpDate);
 
     //TODO atualizar lista da tabela orbcomm.
-    Statuses.map(
-      async (objects) =>
-        await this.prisma.sendMessages.update({
-          where: { id: objects.ReferenceNumber },
-          data: {
-            status: {
-              set: this.convertMessageStats(
-                OrbcommMessageStatus[OrbcommStatusMap[objects.State]],
-              ),
-            },
-          },
-        }),
-    );
 
-    Statuses.map(
-      async (objects) =>
-        await this.prisma.sendMessagesOrbcomm.update({
-          where: { sendMessageId: objects.ReferenceNumber },
-          data: {
-            statusOrbcomm:
-              OrbcommMessageStatus[OrbcommStatusMap[objects.State]],
-            errorId: objects.ErrorID,
+    messagesToUpdate.map(async (itemList) => {
+      const elementToPersist = await dataToUpDate.find(
+        (sendM) => sendM.sendMessageId === itemList.sendMessageId,
+      );
+      if (!elementToPersist) {
+        console.log(elementToPersist);
+        return;
+      }
+      await this.prisma.sendMessages.update({
+        where: { id: elementToPersist.sendMessageId },
+        data: {
+          status: {
+            set: this.convertMessageStats(elementToPersist.statusOrbcomm),
           },
-        }),
-    );
+        },
+      });
+    });
+    messagesToUpdate.map(async (itemList) => {
+      const elementToPersist = dataToUpDate.find(
+        (sendM) => sendM.sendMessageId === itemList.id,
+      );
+      if (!elementToPersist) {
+        console.log(elementToPersist);
+        return;
+      }
+      await this.prisma.sendMessagesOrbcomm.update({
+        where: { sendMessageId: elementToPersist.sendMessageId },
+        data: {
+          statusOrbcomm: {
+            set: elementToPersist.statusOrbcomm,
+          },
+        },
+      });
+    });
+
+    // Statuses.map(
+    //   async (objects) =>
+    //     await this.prisma.sendMessages.update({
+    //       where: { id: objects.ReferenceNumber },
+    //       data: {
+    //         status: {
+    //           set: this.convertMessageStats(
+    //             OrbcommMessageStatus[OrbcommStatusMap[objects.State]],
+    //           ),
+    //         },
+    //       },
+    //     }),
+    // );
+
+    //   Statuses.map(
+    //     async (objects) =>
+    //       await this.prisma.sendMessagesOrbcomm.update({
+    //         where: { sendMessageId: objects.ReferenceNumber },
+    //         data: {
+    //           statusOrbcomm:
+    //             OrbcommMessageStatus[OrbcommStatusMap[objects.State]],
+    //           errorId: objects.ErrorID,
+    //         },
+    //       }),
+    //   );
   }
 
   convertMessageStats(status: OrbcommMessageStatus): MessageStatus {
