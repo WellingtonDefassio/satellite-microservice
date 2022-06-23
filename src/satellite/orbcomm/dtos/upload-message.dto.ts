@@ -1,6 +1,6 @@
-import { StatusOrbcommMessage } from '@prisma/client';
+import { OrbcommMessageStatus } from '@prisma/client';
 
-export enum StatusOrbcommEnum {
+export enum OrbcommStatusMap {
   SUBMITTED = 0,
   RECEIVED = 1,
   ERROR = 2,
@@ -23,13 +23,13 @@ export class SendMessagesOrbcommDto {
   sendMessageId: number;
   deviceId: string;
   fwrdMessageId: number;
-  statusOrbcomm: StatusOrbcommMessage;
+  statusOrbcomm: OrbcommMessageStatus;
 
   constructor(message: Submission) {
     this.sendMessageId = message.UserMessageID;
     this.deviceId = message.DestinationID;
     this.fwrdMessageId = message.ForwardMessageID;
     this.statusOrbcomm =
-      StatusOrbcommMessage[StatusOrbcommEnum[message.ErrorID]];
+      OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]];
   }
 }
