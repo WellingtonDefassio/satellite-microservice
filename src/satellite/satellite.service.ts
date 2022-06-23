@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { SendMessageDto } from 'src/dtos/satellite.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SendMessageDto } from '../dtos/satellite.dto';
 
 @Injectable()
 export class SatelliteService {
   constructor(private prisma: PrismaService) {}
 
-  async rosterMessage(body: SendMessageDto) {
+  async recordMessage(body: SendMessageDto) {
     await this.prisma.sendMessages.create({
       data: {
         payload: body.payload,

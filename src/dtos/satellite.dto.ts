@@ -1,6 +1,5 @@
 import { DeviceGateway, DeviceStatus } from '@prisma/client';
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { DeviceExists } from '../pipes/validator-device.pipe';
 
 class DeviceInfoDto {
   @IsNumber()
@@ -13,7 +12,6 @@ class DeviceInfoDto {
 
 export class SendMessageDto {
   @IsNotEmpty()
-  @DeviceExists()
   deviceID: string;
   @IsNotEmpty()
   @IsString()

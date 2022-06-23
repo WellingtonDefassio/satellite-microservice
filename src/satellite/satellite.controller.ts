@@ -14,9 +14,9 @@ export class SatelliteController {
   constructor(private satelliteService: SatelliteService) {}
 
   @Post('message')
-  @UsePipes(FetchByDeviceID, new ValidationPipe())
+  @UsePipes(FetchByDeviceID)
   async sendMessage(@Body() body: SendMessageDto) {
     console.log('Controller body :' + JSON.stringify(body));
-    return this.satelliteService.rosterMessage(body);
+    return this.satelliteService.recordMessage(body);
   }
 }

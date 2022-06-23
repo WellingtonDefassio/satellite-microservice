@@ -4,26 +4,13 @@ import { Cron } from '@nestjs/schedule';
 import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  OrbcommStatusMap,
   SendMessagesOrbcommDto,
   UpdateStatusMessagesOrbcommDto,
-} from './dtos/upload-message.dto';
+} from './helpers/dtos/upload-message.dto';
 
-interface SubmitResponse {
-  ErrorID: number;
-  Submission: Submission[];
-}
-
-interface Submission {
-  ForwardMessageID: number;
-  DestinationID: string;
-  ErrorID: number;
-  UserMessageID: number;
-}
 @Injectable()
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
-
   // @Cron('15 * * * * *')
   async uploadMessage() {
     console.log('SEND MESSAGES PROCESS.....');

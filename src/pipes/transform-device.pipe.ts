@@ -1,4 +1,9 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  Injectable,
+  NotFoundException,
+  PipeTransform,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class FetchByDeviceID implements PipeTransform {
@@ -8,6 +13,9 @@ export class FetchByDeviceID implements PipeTransform {
     const fetchDevice = await this.prisma.devices.findUnique({
       where: { deviceId: body.deviceID },
     });
+    if (!fetchDevice) {
+      throw new NotFoundException('DEVICE NOT FOUND');
+    }
     const device = {
       id: fetchDevice.id,
       gateway: fetchDevice.satelliteGateway,
