@@ -1,11 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
 import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
-
-export function exists(param: any) {
-  if (!param) {
-    throw new NotFoundException();
-  }
-}
 
 export function convertMessageStatus(
   status: OrbcommMessageStatus,
