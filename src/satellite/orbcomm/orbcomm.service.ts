@@ -1,19 +1,17 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  SendMessagesOrbcommDto,
-  UpdateStatusMessagesOrbcommDto,
-} from './helpers/dtos/upload-message.dto';
 import {
   SubmitResponse,
   ForwardStatuses,
   Submission,
   StatusesType,
-} from './helpers/interfaces/upload-messages.interfaces';
-import { convertMessageStatus } from './helpers/validators/orbcomm.validators';
+  convertMessageStatus,
+  SendMessagesOrbcommDto,
+  UpdateStatusMessagesOrbcommDto,
+} from './helpers/index';
 
 @Injectable()
 export class OrbcommService {
