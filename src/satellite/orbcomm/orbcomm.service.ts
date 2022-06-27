@@ -32,7 +32,7 @@ export class OrbcommService {
         )
         .then(this.createAndUpdateSendMessages);
     } catch (error) {
-      return 'not found';
+      return error.message;
     }
   }
 
@@ -52,15 +52,50 @@ export class OrbcommService {
         });
 
       console.log(messagesToUpdate);
-
-      //TODO metodo que gera uma lista de menssagens para consulta na api posteriormente atualizada
-
-      // await this.updateUploadMessages(Statuses, messagesToUpdate);
     } catch (error) {
       return 'not found';
     }
   }
+  private postMessagesOrbcomm = (url: string, body: PostMessagesParams) => {
+    return new Promise((resolve) => {
+      resolve(
+        this.http.axiosRef
+          .post('http://localhost:3001/' + url, {
+            body,
+          }) //LINK = ORBCOMM/FAKE
+          .then((resolve) => {
+            return verifyPostMessages(body.messages, resolve.data.Submission);
+          })
+          .catch((reject) => {
+            return reject.message;
+          }),
+      );
+    });
+  };
 
+  private createAndUpdateSendMessages = (createAndUpdatePost: Submission[]) => {
+    createAndUpdatePost.map(async (item) => {
+      const updateSatellite = this.prisma.sendMessages.update({
+        where: { id: item.UserMessageID },
+        data: {
+          status: {
+            set: convertMessageStatus(
+              OrbcommMessageStatus[OrbcommStatusMap[item.ErrorID]],
+            ),
+          },
+        },
+      });
+      const createOrbcomm = this.prisma.sendMessagesOrbcomm.create({
+        data: {
+          deviceId: item.DestinationID,
+          fwrdMessageId: item.ForwardMessageID,
+          sendMessageId: item.UserMessageID,
+          statusOrbcomm: OrbcommMessageStatus[OrbcommStatusMap[item.ErrorID]],
+        },
+      });
+      this.prisma.$transaction([createOrbcomm, updateSatellite]);
+    });
+  };
   private findCreatedList = async () => {
     const list = await this.prisma.sendMessages.findMany({
       where: {
@@ -107,45 +142,4 @@ export class OrbcommService {
       throw Error(error.message);
     }
   }
-
-  private postMessagesOrbcomm = (link: string, data: PostMessagesParams) => {
-    return new Promise((resolve) => {
-      resolve(
-        this.http.axiosRef
-          .post('http://localhost:3001/' + link, {
-            data,
-          }) //LINK = ORBCOMM/FAKE
-          .then((resolve) => {
-            return verifyPostMessages(data.messages, resolve.data.Submission);
-          })
-          .catch((reject) => {
-            return reject.message;
-          }),
-      );
-    });
-  };
-
-  createAndUpdateSendMessages = (createAndUpdatePost: Submission[]) => {
-    createAndUpdatePost.map(async (item) => {
-      const updateSatellite = this.prisma.sendMessages.update({
-        where: { id: item.UserMessageID },
-        data: {
-          status: {
-            set: convertMessageStatus(
-              OrbcommMessageStatus[OrbcommStatusMap[item.ErrorID]],
-            ),
-          },
-        },
-      });
-      const createOrbcomm = this.prisma.sendMessagesOrbcomm.create({
-        data: {
-          deviceId: item.DestinationID,
-          fwrdMessageId: item.ForwardMessageID,
-          sendMessageId: item.UserMessageID,
-          statusOrbcomm: OrbcommMessageStatus[OrbcommStatusMap[item.ErrorID]],
-        },
-      });
-      this.prisma.$transaction([createOrbcomm, updateSatellite]);
-    });
-  };
 }
