@@ -4,16 +4,14 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { OrbcommMessageStatus, SendMessagesOrbcomm } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  formatMessagesToPost,
-  verifyPostMessages,
-} from './helpers/functions/send-messages.functions';
-import {
   Submission,
   StatusesType,
   convertMessageStatus,
   UpdateStatusMessagesOrbcommDto,
   PostMessagesParams,
   OrbcommStatusMap,
+  formatMessagesToPost,
+  verifyPostMessages,
 } from './helpers/index';
 
 @Injectable()
@@ -36,7 +34,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron('45 * * * * *')
+  @Cron('45 * * * * *') //TODO RESOLVER!!!
   async checkMessages() {
     try {
       console.log('UPDATE MESSAGES PROCESS....');
