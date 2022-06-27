@@ -1,5 +1,8 @@
 import { SendMessages } from '@prisma/client';
-import { PostMessagesParams } from '../interfaces/upload-messages.interfaces';
+import {
+  PostMessagesParams,
+  Submission,
+} from '../interfaces/upload-messages.interfaces';
 
 export const formatMessagesToPost = (
   messagesCreated: SendMessages[],
@@ -19,4 +22,18 @@ export const formatMessagesToPost = (
   }
   console.log(messagesToPost);
   return messagesToPost;
+};
+
+export const verifyPostMessages = (data, resolveData): Submission[] => {
+  const validItems = [];
+  resolveData.map((apiResponse) => {
+    const exists = data.find(
+      (data) => data.UserMessageID === apiResponse.UserMessageID,
+    );
+    if (exists) {
+      validItems.push(apiResponse);
+    }
+  });
+  console.log(validItems);
+  return validItems;
 };

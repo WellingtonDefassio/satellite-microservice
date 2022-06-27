@@ -1,21 +1,18 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import {
-  OrbcommMessageStatus,
-  SendMessages,
-  SendMessagesOrbcomm,
-} from '@prisma/client';
+import { OrbcommMessageStatus, SendMessagesOrbcomm } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { formatMessagesToPost } from './helpers/functions/send-messages.functions';
+import {
+  formatMessagesToPost,
+  verifyPostMessages,
+} from './helpers/functions/send-messages.functions';
 import {
   Submission,
   StatusesType,
   convertMessageStatus,
-  SendMessagesOrbcommDto,
   UpdateStatusMessagesOrbcommDto,
   PostMessagesParams,
-  SubmitResponse,
   OrbcommStatusMap,
 } from './helpers/index';
 
@@ -28,41 +25,12 @@ export class OrbcommService {
     console.log('SEND MESSAGES PROCESS.....');
 
     try {
-      await this.prisma.sendMessages
-        .findMany({
-          where: {
-            AND: [
-              { deviceGateWay: { equals: 'ORBCOMM_V2' } },
-              { status: { equals: 'CREATED' } },
-            ],
-          },
-          take: 50,
-        })
+      this.findCreatedList()
         .then(formatMessagesToPost)
-        .then((sendPostMessages) =>
-          this.postMessagesOrbcomm('fakeorbcomm/getobject', sendPostMessages),
+        .then((postMessages) =>
+          this.postMessagesOrbcomm('fakeorbcomm/getobject', postMessages),
         )
-        .then(this.createAndUpdatePost);
-
-      // if (!messagesWithStatusCreated) return;
-      // //TODO logica para caso não haja objetos -> helper
-      // console.log(messagesWithStatusCreated);
-      // //TODO implementar logica de envio de lista para orbcomm
-      // //TODO envio da mensagem para API deve conter (access_id, password) <= padrão + message => {DestinationID = DeviceID, UserMessageID = SendMessagesID, RawPayload = SendMessagesPayload}
-
-      // const { Submission }: SubmitResponse = await this.http.axiosRef
-      //   .post('http://localhost:3001/fakeorbcomm/getobject')
-      //   .then(async (resolve) => {
-      //     return await resolve.data;
-      //   })
-      //   .catch(async (reject) => {
-      //     throw new Error(reject.message);
-      //   });
-
-      // await this.createAndUpdateUploadMessages(
-      //   messagesWithStatusCreated,
-      //   Submission,
-      // );
+        .then(this.createAndUpdateSendMessages);
     } catch (error) {
       return 'not found';
     }
@@ -92,6 +60,19 @@ export class OrbcommService {
       return 'not found';
     }
   }
+
+  private findCreatedList = async () => {
+    const list = await this.prisma.sendMessages.findMany({
+      where: {
+        AND: [
+          { deviceGateWay: { equals: 'ORBCOMM_V2' } },
+          { status: { equals: 'CREATED' } },
+        ],
+      },
+      take: 50,
+    });
+    return list;
+  };
 
   private async updateUploadMessages(
     Statuses: StatusesType[],
@@ -135,7 +116,7 @@ export class OrbcommService {
             data,
           }) //LINK = ORBCOMM/FAKE
           .then((resolve) => {
-            return this.verifyPostMessages(data, resolve.data);
+            return verifyPostMessages(data.messages, resolve.data.Submission);
           })
           .catch((reject) => {
             return reject.message;
@@ -144,25 +125,9 @@ export class OrbcommService {
     });
   };
 
-  private verifyPostMessages = (
-    data: PostMessagesParams,
-    resolveData: SubmitResponse,
-  ): Submission[] => {
-    const validItems = [];
-    resolveData.Submission.map((apiResponse) => {
-      const exists = data.messages.find(
-        (data) => data.UserMessageID === apiResponse.UserMessageID,
-      );
-      if (exists) {
-        validItems.push(apiResponse);
-      }
-    });
-    console.log(validItems);
-    return validItems;
-  };
-  createAndUpdatePost = (createAndUpdatePost: Submission[]) => {
+  createAndUpdateSendMessages = (createAndUpdatePost: Submission[]) => {
     createAndUpdatePost.map(async (item) => {
-      await this.prisma.sendMessages.update({
+      const updateSatellite = this.prisma.sendMessages.update({
         where: { id: item.UserMessageID },
         data: {
           status: {
@@ -172,7 +137,7 @@ export class OrbcommService {
           },
         },
       });
-      await this.prisma.sendMessagesOrbcomm.create({
+      const createOrbcomm = this.prisma.sendMessagesOrbcomm.create({
         data: {
           deviceId: item.DestinationID,
           fwrdMessageId: item.ForwardMessageID,
@@ -180,6 +145,7 @@ export class OrbcommService {
           statusOrbcomm: OrbcommMessageStatus[OrbcommStatusMap[item.ErrorID]],
         },
       });
+      this.prisma.$transaction([createOrbcomm, updateSatellite]);
     });
   };
 }
