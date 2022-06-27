@@ -31,3 +31,13 @@ export interface Submission {
   ErrorID: number;
   UserMessageID: number;
 }
+export interface PostParams {
+  DestinationID: string;
+  UserMessageID: number;
+  RawPayload: number[];
+}
+export interface PostMessagesParams {
+  access_id: number;
+  password: string;
+  messages?: PostParams[];
+}

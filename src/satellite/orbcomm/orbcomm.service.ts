@@ -1,28 +1,35 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-  SubmitResponse,
-  ForwardStatuses,
+  OrbcommMessageStatus,
+  SendMessages,
+  SendMessagesOrbcomm,
+} from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { formatMessagesToPost } from './helpers/functions/send-messages.functions';
+import {
   Submission,
   StatusesType,
   convertMessageStatus,
   SendMessagesOrbcommDto,
   UpdateStatusMessagesOrbcommDto,
+  PostMessagesParams,
+  SubmitResponse,
+  OrbcommStatusMap,
 } from './helpers/index';
 
 @Injectable()
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
-  @Cron('15 * * * * *')
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async uploadMessage() {
     console.log('SEND MESSAGES PROCESS.....');
 
     try {
-      const messagesWithStatusCreated: SendMessages[] =
-        await this.prisma.sendMessages.findMany({
+      await this.prisma.sendMessages
+        .findMany({
           where: {
             AND: [
               { deviceGateWay: { equals: 'ORBCOMM_V2' } },
@@ -30,27 +37,32 @@ export class OrbcommService {
             ],
           },
           take: 50,
-        });
-
-      if (!messagesWithStatusCreated) return;
-      //TODO logica para caso não haja objetos -> helper
-      console.log(messagesWithStatusCreated);
-      //TODO implementar logica de envio de lista para orbcomm
-      //TODO envio da mensagem para API deve conter (access_id, password) <= padrão + message => {DestinationID = DeviceID, UserMessageID = SendMessagesID, RawPayload = SendMessagesPayload}
-
-      const { Submission }: SubmitResponse = await this.http.axiosRef
-        .post('http://localhost:3001/fakeorbcomm/getobject')
-        .then(async (resolve) => {
-          return await resolve.data;
         })
-        .catch(async (reject) => {
-          throw new Error(reject.message);
-        });
+        .then(formatMessagesToPost)
+        .then((sendPostMessages) =>
+          this.postMessagesOrbcomm('fakeorbcomm/getobject', sendPostMessages),
+        )
+        .then(this.createAndUpdatePost);
 
-      await this.createAndUpdateUploadMessages(
-        messagesWithStatusCreated,
-        Submission,
-      );
+      // if (!messagesWithStatusCreated) return;
+      // //TODO logica para caso não haja objetos -> helper
+      // console.log(messagesWithStatusCreated);
+      // //TODO implementar logica de envio de lista para orbcomm
+      // //TODO envio da mensagem para API deve conter (access_id, password) <= padrão + message => {DestinationID = DeviceID, UserMessageID = SendMessagesID, RawPayload = SendMessagesPayload}
+
+      // const { Submission }: SubmitResponse = await this.http.axiosRef
+      //   .post('http://localhost:3001/fakeorbcomm/getobject')
+      //   .then(async (resolve) => {
+      //     return await resolve.data;
+      //   })
+      //   .catch(async (reject) => {
+      //     throw new Error(reject.message);
+      //   });
+
+      // await this.createAndUpdateUploadMessages(
+      //   messagesWithStatusCreated,
+      //   Submission,
+      // );
     } catch (error) {
       return 'not found';
     }
@@ -75,16 +87,7 @@ export class OrbcommService {
 
       //TODO metodo que gera uma lista de menssagens para consulta na api posteriormente atualizada
 
-      const { Statuses }: ForwardStatuses = await this.http.axiosRef
-        .post('http://localhost:3001/fakeorbcomm/getfwd')
-        .then(async (resolve) => {
-          return await resolve.data;
-        })
-        .catch(async (reject) => {
-          throw new Error(reject.message);
-        });
-
-      await this.updateUploadMessages(Statuses, messagesToUpdate);
+      // await this.updateUploadMessages(Statuses, messagesToUpdate);
     } catch (error) {
       return 'not found';
     }
@@ -124,43 +127,59 @@ export class OrbcommService {
     }
   }
 
-  private async createAndUpdateUploadMessages(
-    messagesWithStatusCreated: SendMessages[],
-    Submission: Submission[],
-  ) {
-    try {
-      const orbcommMessagesDto = Submission.map(
-        (returnApiMessage) => new SendMessagesOrbcommDto(returnApiMessage),
+  private postMessagesOrbcomm = (link: string, data: PostMessagesParams) => {
+    return new Promise((resolve) => {
+      resolve(
+        this.http.axiosRef
+          .post('http://localhost:3001/' + link, {
+            data,
+          }) //LINK = ORBCOMM/FAKE
+          .then((resolve) => {
+            return this.verifyPostMessages(data, resolve.data);
+          })
+          .catch((reject) => {
+            return reject.message;
+          }),
       );
+    });
+  };
 
-      console.log(messagesWithStatusCreated, orbcommMessagesDto);
-      messagesWithStatusCreated.map(async (objectStatusCreated) => {
-        const submittedMessages = orbcommMessagesDto.find(
-          (orbcommObjectSubmitted) =>
-            orbcommObjectSubmitted.sendMessageId === objectStatusCreated.id,
-        );
-
-        if (!submittedMessages) return;
-
-        await this.prisma.sendMessages.update({
-          where: { id: submittedMessages.sendMessageId },
-          data: {
-            status: {
-              set: convertMessageStatus(submittedMessages.statusOrbcomm),
-            },
+  private verifyPostMessages = (
+    data: PostMessagesParams,
+    resolveData: SubmitResponse,
+  ): Submission[] => {
+    const validItems = [];
+    resolveData.Submission.map((apiResponse) => {
+      const exists = data.messages.find(
+        (data) => data.UserMessageID === apiResponse.UserMessageID,
+      );
+      if (exists) {
+        validItems.push(apiResponse);
+      }
+    });
+    console.log(validItems);
+    return validItems;
+  };
+  createAndUpdatePost = (createAndUpdatePost: Submission[]) => {
+    createAndUpdatePost.map(async (item) => {
+      await this.prisma.sendMessages.update({
+        where: { id: item.UserMessageID },
+        data: {
+          status: {
+            set: convertMessageStatus(
+              OrbcommMessageStatus[OrbcommStatusMap[item.ErrorID]],
+            ),
           },
-        });
-        await this.prisma.sendMessagesOrbcomm.create({
-          data: {
-            deviceId: submittedMessages.deviceId,
-            fwrdMessageId: submittedMessages.fwrdMessageId,
-            sendMessageId: submittedMessages.sendMessageId,
-            statusOrbcomm: submittedMessages.statusOrbcomm,
-          },
-        });
+        },
       });
-    } catch (error) {
-      throw Error(error.message);
-    }
-  }
+      await this.prisma.sendMessagesOrbcomm.create({
+        data: {
+          deviceId: item.DestinationID,
+          fwrdMessageId: item.ForwardMessageID,
+          sendMessageId: item.UserMessageID,
+          statusOrbcomm: OrbcommMessageStatus[OrbcommStatusMap[item.ErrorID]],
+        },
+      });
+    });
+  };
 }
