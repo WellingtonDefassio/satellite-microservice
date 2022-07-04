@@ -12,7 +12,6 @@ export interface Submission {
 
 export interface ForwardStatuses {
   ErrorID: number;
-  NextStartUTC: string;
   Statuses: StatusesType[];
 }
 
@@ -40,4 +39,9 @@ export interface MessageBodyPost {
     UserMessageID: number;
     RawPayload: number[];
   }[];
+}
+export interface MessageBodyGetStatus {
+  access_id: string;
+  password: string;
+  fwIDs: number[];
 }

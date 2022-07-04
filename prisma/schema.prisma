@@ -27,7 +27,7 @@ model SendMessagesOrbcomm {
   sendMessage   SendMessages          @relation(fields: [sendMessageId], references: [id])
   deviceId      String
   fwrdMessageId String
-  statusOrbcomm OrbcommMessageStatus?
+  status OrbcommMessageStatus?
   errorId       Int?                  @default(0)
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt

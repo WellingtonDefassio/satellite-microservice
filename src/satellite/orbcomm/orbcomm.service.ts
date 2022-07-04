@@ -11,18 +11,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   OrbcommStatusMap,
   UpdateStatusMessagesOrbcommDto,
-} from './helpers/dtos/upload-message.dto';
-import { postApiMessages } from './helpers/func/upload-functions';
-import {
+  postApiMessages,
   ForwardStatuses,
   Submission,
   StatusesType,
   MessageBodyPost,
-} from './helpers/interfaces/upload-messages.interfaces';
-import {
   convertMessageStatus,
   messagesExists,
-} from './helpers/validators/orbcomm.validators';
+  MessageBodyGetStatus,
+  getMessagesOrbcommStatus,
+} from './helpers/index';
 
 @Injectable()
 export class OrbcommService {
@@ -33,49 +31,33 @@ export class OrbcommService {
     console.log('SEND MESSAGES PROCESS.....');
 
     try {
-      this.findMessagesByStatus('CREATED', 'ORBCOMM_V2')
+      this.findMessagesByStatus()
         .then(messagesExists)
         .then(this.formatMessageToPost)
         .then((apiPost) => postApiMessages(this.http, apiPost))
         .then((apiResponse) =>
           this.saveAndUpdateMessages(apiResponse, this.prisma),
         )
-        .then(console.log)
         .catch(console.log);
     } catch (error) {
       return error.message;
     }
   }
 
-  @Cron('45 * * * * *')
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMessages() {
     try {
-      console.log('UPDATE MESSAGES PROCESS....');
-      const messagesToUpdate: SendMessagesOrbcomm[] =
-        await this.prisma.sendMessagesOrbcomm.findMany({
-          where: {
-            OR: [
-              { statusOrbcomm: { equals: 'SUBMITTED' } },
-              { statusOrbcomm: { equals: 'WAITING' } },
-            ],
-          },
-          take: 50,
-        });
+      console.log('UPDATE MESSAGES');
+      this.findMessagesByOrbcommStatus()
+        .then(this.createListOfFwdIds)
+        .then(this.formatMessageToGetStatus)
+        .then((getParam) => getMessagesOrbcommStatus(this.http, getParam))
+        .then((apiResponse) => this.updateFwdMessages(apiResponse, this.prisma))
 
-      console.log(messagesToUpdate);
+        .then(console.log)
+        .catch(console.log);
 
-      //TODO metodo que gera uma lista de menssagens para consulta na api posteriormente atualizada
-
-      const { Statuses }: ForwardStatuses = await this.http.axiosRef
-        .post('http://localhost:3001/fakeorbcomm/getfwd')
-        .then(async (resolve) => {
-          return await resolve.data;
-        })
-        .catch(async (reject) => {
-          throw new Error(reject.message);
-        });
-
-      await this.updateUploadMessages(Statuses, messagesToUpdate);
+      // await this.updateUploadMessages(Statuses);
     } catch (error) {
       return 'not found';
     }
@@ -107,7 +89,7 @@ export class OrbcommService {
         });
         await this.prisma.sendMessagesOrbcomm.update({
           where: { sendMessageId: updatedMessage.sendMessageId },
-          data: { statusOrbcomm: { set: updatedMessage.statusOrbcomm } },
+          data: { status: { set: updatedMessage.statusOrbcomm } },
         });
       });
     } catch (error) {
@@ -115,21 +97,20 @@ export class OrbcommService {
     }
   }
 
-  async findMessagesByStatus(status: MessageStatus, gatewayName: string) {
-    const messagesWithStatusCreated: SendMessages[] =
-      await this.prisma.sendMessages.findMany({
-        where: {
-          AND: [
-            { status: { equals: status } },
-            {
-              device: {
-                satelliteGateway: { name: { equals: gatewayName } },
-              },
+  async findMessagesByStatus() {
+    const messagesWithStatusCreated = this.prisma.sendMessages.findMany({
+      where: {
+        AND: [
+          { status: { equals: 'CREATED' } },
+          {
+            device: {
+              satelliteGateway: { name: { equals: 'ORBCOMM_V2' } },
             },
-          ],
-        },
-        take: 50,
-      });
+          },
+        ],
+      },
+      take: 50,
+    });
     return messagesWithStatusCreated;
   }
   formatMessageToPost(messages: SendMessages[]): MessageBodyPost {
@@ -158,8 +139,7 @@ export class OrbcommService {
             deviceId: message.DestinationID,
             fwrdMessageId: message.ForwardMessageID.toString(),
             errorId: message.ErrorID,
-            statusOrbcomm:
-              OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+            status: OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
           },
         });
         const updateMessage = prisma.sendMessages.update({
@@ -177,5 +157,68 @@ export class OrbcommService {
 
       resolve(prisma.$transaction(prismaList));
     });
+  }
+
+  async findMessagesByOrbcommStatus(): Promise<SendMessagesOrbcomm[]> {
+    const orbcommToUpdate = await this.prisma.sendMessagesOrbcomm.findMany({
+      where: {
+        AND: [
+          {
+            sendMessage: {
+              device: { satelliteGateway: { name: { equals: 'ORBCOMM_V2' } } },
+            },
+          },
+          { status: { equals: 'SUBMITTED' } },
+        ],
+      },
+    });
+    return orbcommToUpdate;
+  }
+
+  createListOfFwdIds(messagesToCheck: SendMessagesOrbcomm[]) {
+    const listOfFwIds = [];
+
+    messagesToCheck.forEach((message) => {
+      listOfFwIds.push(message.fwrdMessageId);
+    });
+
+    return listOfFwIds;
+  }
+  formatMessageToGetStatus(listOfFwrId: number[]) {
+    const messageBodyPost: MessageBodyGetStatus = {
+      access_id: 'any_access',
+      password: 'any_password',
+      fwIDs: [],
+    };
+    listOfFwrId.forEach((n) => {
+      messageBodyPost.fwIDs.push(n);
+    });
+
+    return messageBodyPost;
+  }
+  updateFwdMessages(statusList: ForwardStatuses, prisma: PrismaService) {
+    console.log(statusList);
+    const listUpdate = [];
+    statusList.Statuses.forEach((status) => {
+      const updateSendMessage = prisma.sendMessages.update({
+        where: { id: status.ReferenceNumber },
+        data: {
+          status: {
+            set: convertMessageStatus(
+              OrbcommMessageStatus[OrbcommStatusMap[status.State]],
+            ),
+          },
+        },
+      });
+      const updateOrbcommMessage = prisma.sendMessagesOrbcomm.update({
+        where: { sendMessageId: status.ReferenceNumber },
+        data: {
+          status: { set: OrbcommMessageStatus[OrbcommStatusMap[status.State]] },
+        },
+      });
+      listUpdate.push(updateOrbcommMessage, updateSendMessage);
+    });
+
+    this.prisma.$transaction(listUpdate);
   }
 }
