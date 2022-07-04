@@ -16,7 +16,6 @@ model SendMessages {
   deviceId       String
   device         Devices              @relation(fields: [deviceId], references: [deviceId])
   status         MessageStatus        @default(CREATED)
-  deviceGateWay  DeviceGateway
   orbcommMessage SendMessagesOrbcomm?
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
@@ -27,7 +26,7 @@ model SendMessagesOrbcomm {
   sendMessageId Int                   @unique
   sendMessage   SendMessages          @relation(fields: [sendMessageId], references: [id])
   deviceId      String
-  fwrdMessageId BigInt
+  fwrdMessageId String
   statusOrbcomm OrbcommMessageStatus?
   errorId       Int?                  @default(0)
   createdAt     DateTime              @default(now())
@@ -38,7 +37,8 @@ model SendMessagesOrbcomm {
 model Devices {
   id               Int            @id @default(autoincrement())
   deviceId         String         @unique
-  satelliteGateway DeviceGateway
+  gatewayId        Int
+  satelliteGateway SatelliteGateway @relation(fields: [gatewayId], references: [id])
   status           DeviceStatus
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
@@ -46,9 +46,10 @@ model Devices {
 
 }
 
-enum DeviceGateway {
-  ORBCOMM_V2
-  ERIDIUM
+model SatelliteGateway {
+   id               Int            @id @default(autoincrement())
+   name             String         @unique
+   devices          Devices[]
 }
 
 enum DeviceStatus {

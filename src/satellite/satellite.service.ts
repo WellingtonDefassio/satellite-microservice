@@ -6,12 +6,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class SatelliteService {
   constructor(private prisma: PrismaService) {}
 
-  async recordMessage(body: SendMessageDto) {
+  async sendMessage(body: SendMessageDto) {
     await this.prisma.sendMessages.create({
       data: {
         payload: body.payload,
-        deviceGateWay: body.device.gateway,
-        device: { connect: { deviceId: body.deviceID } },
+        device: { connect: { deviceId: body.deviceId } },
       },
     });
   }

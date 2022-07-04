@@ -1,18 +1,18 @@
-import { DeviceGateway, DeviceStatus } from '@prisma/client';
+import { DeviceStatus } from '@prisma/client';
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 class DeviceInfoDto {
   @IsNumber()
   id: number;
-  @IsEnum(DeviceGateway)
-  gateway: DeviceGateway;
+  @IsNumber()
+  deviceId: number;
   @IsEnum(DeviceStatus)
   status: DeviceStatus;
 }
 
 export class SendMessageDto {
   @IsNotEmpty()
-  deviceID: string;
+  deviceId: string;
   @IsNotEmpty()
   @IsString()
   payload: string;

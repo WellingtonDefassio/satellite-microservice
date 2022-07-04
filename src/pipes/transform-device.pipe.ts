@@ -5,20 +5,26 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+
+interface bodyParams {
+  deviceId: string;
+  payload: string;
+}
+
 @Injectable()
 export class FetchByDeviceID implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
-  async transform(body: any, metadata: ArgumentMetadata) {
+  async transform(body: bodyParams, metadata: ArgumentMetadata) {
     const fetchDevice = await this.prisma.devices.findUnique({
-      where: { deviceId: body.deviceID },
+      where: { deviceId: body.deviceId },
     });
     if (!fetchDevice) {
-      throw new NotFoundException('DEVICE NOT FOUND');
+      throw new NotFoundException('device not found');
     }
     const device = {
       id: fetchDevice.id,
-      gateway: fetchDevice.satelliteGateway,
+      gateway: fetchDevice.gatewayId,
       status: fetchDevice.status,
     };
     return { ...body, device: device };

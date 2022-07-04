@@ -1,60 +1,49 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
-import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import {
+  MessageStatus,
+  OrbcommMessageStatus,
+  SendMessages,
+  SendMessagesOrbcomm,
+} from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  SendMessagesOrbcommDto,
+  OrbcommStatusMap,
   UpdateStatusMessagesOrbcommDto,
 } from './helpers/dtos/upload-message.dto';
+import { postApiMessages } from './helpers/func/upload-functions';
 import {
-  SubmitResponse,
   ForwardStatuses,
   Submission,
   StatusesType,
+  MessageBodyPost,
 } from './helpers/interfaces/upload-messages.interfaces';
-import { convertMessageStatus } from './helpers/validators/orbcomm.validators';
+import {
+  convertMessageStatus,
+  messagesExists,
+} from './helpers/validators/orbcomm.validators';
 
 @Injectable()
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
-  @Cron('15 * * * * *')
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async uploadMessage() {
     console.log('SEND MESSAGES PROCESS.....');
 
     try {
-      const messagesWithStatusCreated: SendMessages[] =
-        await this.prisma.sendMessages.findMany({
-          where: {
-            AND: [
-              { deviceGateWay: { equals: 'ORBCOMM_V2' } },
-              { status: { equals: 'CREATED' } },
-            ],
-          },
-          take: 50,
-        });
-
-      if (!messagesWithStatusCreated) return;
-      //TODO logica para caso não haja objetos -> helper
-      console.log(messagesWithStatusCreated);
-      //TODO implementar logica de envio de lista para orbcomm
-      //TODO envio da mensagem para API deve conter (access_id, password) <= padrão + message => {DestinationID = DeviceID, UserMessageID = SendMessagesID, RawPayload = SendMessagesPayload}
-
-      const { Submission }: SubmitResponse = await this.http.axiosRef
-        .post('http://localhost:3001/fakeorbcomm/getobject')
-        .then(async (resolve) => {
-          return await resolve.data;
-        })
-        .catch(async (reject) => {
-          throw new Error(reject.message);
-        });
-
-      await this.createAndUpdateUploadMessages(
-        messagesWithStatusCreated,
-        Submission,
-      );
+      this.findMessagesByStatus('CREATED', 'ORBCOMM_V2')
+        .then(messagesExists)
+        .then(this.formatMessageToPost)
+        .then((apiPost) => postApiMessages(this.http, apiPost))
+        .then((apiResponse) =>
+          this.saveAndUpdateMessages(apiResponse, this.prisma),
+        )
+        .then(console.log)
+        .catch(console.log);
     } catch (error) {
-      return 'not found';
+      return error.message;
     }
   }
 
@@ -126,43 +115,67 @@ export class OrbcommService {
     }
   }
 
-  private async createAndUpdateUploadMessages(
-    messagesWithStatusCreated: SendMessages[],
-    Submission: Submission[],
-  ) {
-    try {
-      const orbcommMessagesDto = Submission.map(
-        (returnApiMessage) => new SendMessagesOrbcommDto(returnApiMessage),
-      );
+  async findMessagesByStatus(status: MessageStatus, gatewayName: string) {
+    const messagesWithStatusCreated: SendMessages[] =
+      await this.prisma.sendMessages.findMany({
+        where: {
+          AND: [
+            { status: { equals: status } },
+            {
+              device: {
+                satelliteGateway: { name: { equals: gatewayName } },
+              },
+            },
+          ],
+        },
+        take: 50,
+      });
+    return messagesWithStatusCreated;
+  }
+  formatMessageToPost(messages: SendMessages[]): MessageBodyPost {
+    const messageBodyPost: MessageBodyPost = {
+      access_id: 'any_access',
+      password: 'any_password',
+      messages: [],
+    };
+    messages.forEach((message) =>
+      messageBodyPost.messages.push({
+        DestinationID: message.deviceId,
+        UserMessageID: message.id,
+        RawPayload: Buffer.from(message.payload).toJSON().data,
+      }),
+    );
+    return messageBodyPost;
+  }
 
-      console.log(messagesWithStatusCreated, orbcommMessagesDto);
-      messagesWithStatusCreated.map(async (objectStatusCreated) => {
-        const submittedMessages = orbcommMessagesDto.find(
-          (orbcommObjectSubmitted) =>
-            orbcommObjectSubmitted.sendMessageId === objectStatusCreated.id,
-        );
-
-        if (!submittedMessages) return;
-
-        await this.prisma.sendMessages.update({
-          where: { id: submittedMessages.sendMessageId },
+  saveAndUpdateMessages(messages: Submission[], prisma: PrismaService) {
+    return new Promise((resolve) => {
+      const prismaList = [];
+      messages.forEach((message) => {
+        const createMessage = prisma.sendMessagesOrbcomm.create({
+          data: {
+            sendMessageId: message.UserMessageID,
+            deviceId: message.DestinationID,
+            fwrdMessageId: message.ForwardMessageID.toString(),
+            errorId: message.ErrorID,
+            statusOrbcomm:
+              OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+          },
+        });
+        const updateMessage = prisma.sendMessages.update({
+          where: { id: message.UserMessageID },
           data: {
             status: {
-              set: convertMessageStatus(submittedMessages.statusOrbcomm),
+              set: convertMessageStatus(
+                OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+              ),
             },
           },
         });
-        await this.prisma.sendMessagesOrbcomm.create({
-          data: {
-            deviceId: submittedMessages.deviceId,
-            fwrdMessageId: submittedMessages.fwrdMessageId,
-            sendMessageId: submittedMessages.sendMessageId,
-            statusOrbcomm: submittedMessages.statusOrbcomm,
-          },
-        });
+        prismaList.push(createMessage, updateMessage);
       });
-    } catch (error) {
-      throw Error(error.message);
-    }
+
+      resolve(prisma.$transaction(prismaList));
+    });
   }
 }

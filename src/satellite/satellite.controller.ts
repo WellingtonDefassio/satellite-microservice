@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, Post, UsePipes } from '@nestjs/common';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { FetchByDeviceID } from '../pipes/transform-device.pipe';
 import { SatelliteService } from './satellite.service';
@@ -17,6 +11,6 @@ export class SatelliteController {
   @UsePipes(FetchByDeviceID)
   async sendMessage(@Body() body: SendMessageDto) {
     console.log('Controller body :' + JSON.stringify(body));
-    return this.satelliteService.recordMessage(body);
+    return this.satelliteService.sendMessage(body);
   }
 }

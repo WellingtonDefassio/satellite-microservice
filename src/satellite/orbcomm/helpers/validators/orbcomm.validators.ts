@@ -1,4 +1,8 @@
-import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
+import {
+  MessageStatus,
+  OrbcommMessageStatus,
+  SendMessages,
+} from '@prisma/client';
 
 export function convertMessageStatus(
   status: OrbcommMessageStatus,
@@ -19,5 +23,16 @@ export function convertMessageStatus(
       return 'CANCELLED';
     default:
       break;
+  }
+}
+
+export function messagesExists(
+  messagesToUpload: SendMessages[],
+): SendMessages[] {
+  console.log(messagesToUpload);
+  if (!messagesToUpload.length) {
+    throw new Error('MESSAGES NOT AVAILABLE');
+  } else {
+    return messagesToUpload;
   }
 }

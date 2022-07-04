@@ -19,13 +19,13 @@ export enum OrbcommStatusMap {
 export class SendMessagesOrbcommDto {
   sendMessageId: number;
   deviceId: string;
-  fwrdMessageId: number;
+  fwrdMessageId: string;
   statusOrbcomm: OrbcommMessageStatus;
 
   constructor(message: Submission) {
     this.sendMessageId = message.UserMessageID;
     this.deviceId = message.DestinationID;
-    this.fwrdMessageId = message.ForwardMessageID;
+    this.fwrdMessageId = message.ForwardMessageID.toString();
     this.statusOrbcomm =
       OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]];
   }
