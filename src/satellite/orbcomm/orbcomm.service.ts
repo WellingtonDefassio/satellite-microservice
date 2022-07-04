@@ -2,7 +2,6 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-  MessageStatus,
   OrbcommMessageStatus,
   SendMessages,
   SendMessagesOrbcomm,
@@ -10,11 +9,9 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   OrbcommStatusMap,
-  UpdateStatusMessagesOrbcommDto,
   postApiMessages,
   ForwardStatuses,
   Submission,
-  StatusesType,
   MessageBodyPost,
   convertMessageStatus,
   messagesExists,
@@ -56,44 +53,8 @@ export class OrbcommService {
 
         .then(console.log)
         .catch(console.log);
-
-      // await this.updateUploadMessages(Statuses);
     } catch (error) {
-      return 'not found';
-    }
-  }
-
-  private async updateUploadMessages(
-    Statuses: StatusesType[],
-    messagesToUpdate: SendMessagesOrbcomm[],
-  ) {
-    try {
-      const apiMessagesWithNewStatus = Statuses.map(
-        (returnApiStatus) =>
-          new UpdateStatusMessagesOrbcommDto(returnApiStatus),
-      );
-
-      messagesToUpdate.map(async (messageUpdate) => {
-        const updatedMessage = apiMessagesWithNewStatus.find(
-          (messageNewStatus) =>
-            messageNewStatus.sendMessageId === messageUpdate.sendMessageId,
-        );
-        if (!updatedMessage) return;
-        await this.prisma.sendMessages.update({
-          where: { id: updatedMessage.sendMessageId },
-          data: {
-            status: {
-              set: convertMessageStatus(updatedMessage.statusOrbcomm),
-            },
-          },
-        });
-        await this.prisma.sendMessagesOrbcomm.update({
-          where: { sendMessageId: updatedMessage.sendMessageId },
-          data: { status: { set: updatedMessage.statusOrbcomm } },
-        });
-      });
-    } catch (error) {
-      throw Error(error.message);
+      return error.message;
     }
   }
 
