@@ -39,7 +39,6 @@ export class OrbcommService {
   @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMessages() {
     console.log('UPDATE MESSAGES PROCESS...');
-
     try {
       findMessagesByOrbcommStatus(this.prisma)
         .then(createListOfFwdIds)
