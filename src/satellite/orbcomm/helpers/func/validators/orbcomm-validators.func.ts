@@ -1,8 +1,5 @@
-import {
-  MessageStatus,
-  OrbcommMessageStatus,
-  SendMessages,
-} from '@prisma/client';
+import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
+import { Submission } from '../../index';
 
 export function convertMessageStatus(
   status: OrbcommMessageStatus,
@@ -35,3 +32,16 @@ export function messagesExists(messagesToUpload) {
     return messagesToUpload;
   }
 }
+
+export const verifyPostMessages = (sendedData, responseData): Submission[] => {
+  const validItems: Submission[] = [];
+  responseData.Submissions.map((apiResponse) => {
+    const exists = sendedData.find(
+      (data) => data.UserMessageID === apiResponse.UserMessageID,
+    );
+    if (exists) {
+      validItems.push(apiResponse);
+    }
+  });
+  return validItems;
+};

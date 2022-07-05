@@ -2,7 +2,7 @@ import { OrbcommMessageStatus } from '@prisma/client';
 import {
   StatusesType,
   Submission,
-} from '../interfaces/upload-messages.interfaces';
+} from '../interfaces/orbcomm-messages.interfaces';
 
 export enum OrbcommStatusMap {
   SUBMITTED = 0,
