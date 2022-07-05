@@ -14,10 +14,12 @@ export const postApiMessages = (http: HttpService, body: MessageBodyPost) => {
         body,
       })
       .then((apiResponse) => {
+        console.log(apiResponse.data);
         const correctValues = verifyPostMessages(
           body.messages,
           apiResponse.data,
         );
+        console.log(correctValues);
         resolve(correctValues);
       })
       .catch((error) => {
@@ -28,7 +30,7 @@ export const postApiMessages = (http: HttpService, body: MessageBodyPost) => {
 
 export const verifyPostMessages = (sendedData, responseData): Submission[] => {
   const validItems: Submission[] = [];
-  responseData.Submission.map((apiResponse) => {
+  responseData.Submissions.map((apiResponse) => {
     const exists = sendedData.find(
       (data) => data.UserMessageID === apiResponse.UserMessageID,
     );

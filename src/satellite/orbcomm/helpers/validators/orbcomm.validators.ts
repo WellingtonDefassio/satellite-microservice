@@ -18,6 +18,7 @@ export function convertMessageStatus(
       return 'TIMEOUT';
     case 'DELIVERY_FAILED':
     case 'ERROR':
+    case 'INVALID':
       return 'FAILED';
     case 'CANCELLED':
       return 'CANCELLED';
@@ -26,12 +27,10 @@ export function convertMessageStatus(
   }
 }
 
-export function messagesExists(
-  messagesToUpload: SendMessages[],
-): SendMessages[] {
+export function messagesExists(messagesToUpload) {
   console.log(messagesToUpload);
   if (!messagesToUpload.length) {
-    throw new Error('MESSAGES NOT AVAILABLE');
+    throw new Error('no more messages available');
   } else {
     return messagesToUpload;
   }

@@ -35,7 +35,8 @@ export class OrbcommService {
         .then((apiResponse) =>
           this.saveAndUpdateMessages(apiResponse, this.prisma),
         )
-        .catch(console.log);
+
+        .catch((erro) => console.log(erro.message));
     } catch (error) {
       return error.message;
     }
@@ -44,17 +45,17 @@ export class OrbcommService {
   @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMessages() {
     try {
-      console.log('UPDATE MESSAGES');
+      console.log('UPDATE MESSAGES PROCESS...');
       this.findMessagesByOrbcommStatus()
         .then(this.createListOfFwdIds)
+        .then(messagesExists)
         .then(this.formatMessageToGetStatus)
         .then((getParam) => getMessagesOrbcommStatus(this.http, getParam))
         .then((apiResponse) => this.updateFwdMessages(apiResponse, this.prisma))
 
-        .then(console.log)
-        .catch(console.log);
+        .catch((erro) => console.log(erro.message));
     } catch (error) {
-      return error.message;
+      return error;
     }
   }
 
@@ -154,7 +155,7 @@ export class OrbcommService {
     listOfFwrId.forEach((n) => {
       messageBodyPost.fwIDs.push(n);
     });
-
+    console.log(messageBodyPost);
     return messageBodyPost;
   }
   updateFwdMessages(statusList: ForwardStatuses, prisma: PrismaService) {
