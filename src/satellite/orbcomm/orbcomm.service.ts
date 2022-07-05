@@ -1,7 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { SendMessagesOrbcomm } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   messagesExists,
@@ -12,6 +11,8 @@ import {
   formatMessageToGetStatus,
   orbcommApiGetStatus,
   updateFwdMessages,
+  findMessagesByStatus,
+  findMessagesByOrbcommStatus,
 } from './helpers/index';
 
 @Injectable()
@@ -23,7 +24,7 @@ export class OrbcommService {
     console.log('SEND MESSAGES PROCESS.....');
 
     try {
-      this.findMessagesByStatus()
+      findMessagesByStatus(this.prisma)
         .then(messagesExists)
         .then(formatMessageToPost)
         .then((messageToPost) => postApiMessages(messageToPost, this.http))
@@ -40,7 +41,7 @@ export class OrbcommService {
     console.log('UPDATE MESSAGES PROCESS...');
 
     try {
-      this.findMessagesByOrbcommStatus()
+      findMessagesByOrbcommStatus(this.prisma)
         .then(createListOfFwdIds)
         .then(messagesExists)
         .then(formatMessageToGetStatus)
@@ -51,38 +52,5 @@ export class OrbcommService {
     } catch (error) {
       return error;
     }
-  }
-
-  async findMessagesByStatus() {
-    const messagesWithStatusCreated = this.prisma.sendMessages.findMany({
-      where: {
-        AND: [
-          { status: { equals: 'CREATED' } },
-          {
-            device: {
-              satelliteGateway: { name: { equals: 'ORBCOMM_V2' } },
-            },
-          },
-        ],
-      },
-      take: 50,
-    });
-    return messagesWithStatusCreated;
-  }
-
-  async findMessagesByOrbcommStatus(): Promise<SendMessagesOrbcomm[]> {
-    const orbcommToUpdate = await this.prisma.sendMessagesOrbcomm.findMany({
-      where: {
-        AND: [
-          {
-            sendMessage: {
-              device: { satelliteGateway: { name: { equals: 'ORBCOMM_V2' } } },
-            },
-          },
-          { status: { equals: 'SUBMITTED' } },
-        ],
-      },
-    });
-    return orbcommToUpdate;
   }
 }

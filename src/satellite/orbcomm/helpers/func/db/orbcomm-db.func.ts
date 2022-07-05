@@ -1,4 +1,4 @@
-import { OrbcommMessageStatus } from '@prisma/client';
+import { OrbcommMessageStatus, SendMessagesOrbcomm } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   convertMessageStatus,
@@ -67,4 +67,39 @@ export function updateFwdMessages(
   });
 
   prisma.$transaction(listUpdate);
+}
+
+export function findMessagesByStatus(prisma: PrismaService) {
+  const messagesWithStatusCreated = prisma.sendMessages.findMany({
+    where: {
+      AND: [
+        { status: { equals: 'CREATED' } },
+        {
+          device: {
+            satelliteGateway: { name: { equals: 'ORBCOMM_V2' } },
+          },
+        },
+      ],
+    },
+    take: 50,
+  });
+  return messagesWithStatusCreated;
+}
+
+export async function findMessagesByOrbcommStatus(
+  prisma: PrismaService,
+): Promise<SendMessagesOrbcomm[]> {
+  const orbcommToUpdate = prisma.sendMessagesOrbcomm.findMany({
+    where: {
+      AND: [
+        {
+          sendMessage: {
+            device: { satelliteGateway: { name: { equals: 'ORBCOMM_V2' } } },
+          },
+        },
+        { status: { equals: 'SUBMITTED' } },
+      ],
+    },
+  });
+  return orbcommToUpdate;
 }
