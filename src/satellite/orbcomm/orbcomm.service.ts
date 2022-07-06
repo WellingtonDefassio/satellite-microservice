@@ -5,7 +5,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   messagesExists,
   formatMessageToPost,
-  postApiMessages,
   saveAndUpdateMessages,
   createListOfFwdIds,
   formatMessageToGetStatus,
@@ -13,13 +12,17 @@ import {
   updateFwdMessages,
   findMessagesByStatus,
   findMessagesByOrbcommStatus,
+  findNextMessage,
+  orbcommApiPostMessages,
+  formatParamsToGetMessages,
+  orbcommApiDownloadMessages,
 } from './helpers/index';
 
 @Injectable()
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_10_SECONDS)
   async uploadMessage() {
     console.log('SEND MESSAGES PROCESS.....');
 
@@ -27,7 +30,9 @@ export class OrbcommService {
       findMessagesByStatus(this.prisma)
         .then(messagesExists)
         .then(formatMessageToPost)
-        .then((messageToPost) => postApiMessages(messageToPost, this.http))
+        .then((messageToPost) =>
+          orbcommApiPostMessages(messageToPost, this.http),
+        )
         .then((apiResponse) => saveAndUpdateMessages(apiResponse, this.prisma))
 
         .catch((erro) => console.log(erro.message));
@@ -36,7 +41,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMessages() {
     console.log('UPDATE MESSAGES PROCESS...');
 
@@ -54,7 +59,13 @@ export class OrbcommService {
     }
   }
 
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES PROCESS....');
+
+    findNextMessage(this.prisma)
+      .then(formatParamsToGetMessages)
+      .then((params) => orbcommApiDownloadMessages(params, this.http))
+      .then(console.log);
   }
 }

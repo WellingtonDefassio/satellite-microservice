@@ -1,4 +1,3 @@
-export * from './dtos/orbcomm.dto';
 export * from './func/http/orbcomm-http.func';
 export * from './interfaces/orbcomm-messages.interfaces';
 export * from './func/validators/orbcomm-validators.func';

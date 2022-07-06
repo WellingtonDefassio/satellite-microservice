@@ -43,6 +43,7 @@ model Devices {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   messages         SendMessages[]
+  messagesGet      OrbcommGetMessage[]  
 
 }
 
@@ -57,6 +58,23 @@ model OrbcommNextMessage {
   previousMessage String
   nextMessage String
   createdAt DateTime @default(now())
+}
+
+model OrbcommGetMessage {
+  id Int @default(autoincrement()) @id
+  messageId String @unique
+  messageUTC DateTime
+  receiveUTC DateTime
+  deviceId       String
+  device         Devices              @relation(fields: [deviceId], references: [deviceId])
+  SIN Int
+  MIN Int
+  payload String
+  regionName String
+  otaMessageSize Int
+  costumerID Int
+  transport Int
+  mobileOwnerID String
 }
 
 enum DeviceStatus {

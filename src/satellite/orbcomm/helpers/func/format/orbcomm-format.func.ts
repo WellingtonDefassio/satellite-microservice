@@ -1,5 +1,9 @@
 import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
-import { MessageBodyGetStatus, MessageBodyPost } from '../../index';
+import {
+  BodyToGetMessage,
+  MessageBodyGetStatus,
+  MessageBodyPost,
+} from '../../index';
 
 export function formatMessageToPost(messages: SendMessages[]): MessageBodyPost {
   const messageBodyPost: MessageBodyPost = {
@@ -38,4 +42,17 @@ export function formatMessageToGetStatus(listOfFwrId: number[]) {
   });
   console.log(messageBodyPost);
   return messageBodyPost;
+}
+
+export function formatParamsToGetMessages(nextMessage: {
+  nextMessage: string;
+}) {
+  const messageBodyToGet: BodyToGetMessage = {
+    access_id: 70002657,
+    password: 'ZFLLYNJL',
+    include_raw_payload: true,
+    start_utc: nextMessage.nextMessage,
+  };
+
+  return messageBodyToGet;
 }

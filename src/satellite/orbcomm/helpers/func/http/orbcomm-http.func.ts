@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import {
+  BodyToGetMessage,
   ForwardStatuses,
   MessageBodyGetStatus,
   MessageBodyPost,
@@ -23,7 +24,10 @@ export const orbcommApiGetStatus = (
   });
 };
 
-export const postApiMessages = (body: MessageBodyPost, http: HttpService) => {
+export const orbcommApiPostMessages = (
+  body: MessageBodyPost,
+  http: HttpService,
+) => {
   return new Promise<Submission[]>((resolve, reject) => {
     http.axiosRef
       .post('http://localhost:3001/orbcomm/post', {
@@ -40,6 +44,24 @@ export const postApiMessages = (body: MessageBodyPost, http: HttpService) => {
       })
       .catch((error) => {
         reject(error.message);
+      });
+  });
+};
+
+export const orbcommApiDownloadMessages = (
+  body: BodyToGetMessage,
+  http: HttpService,
+) => {
+  return new Promise((resolve, reject) => {
+    http.axiosRef
+      .get(
+        'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_return_messages/',
+        {
+          params: body,
+        },
+      )
+      .then((apiResponse) => {
+        resolve(apiResponse.data);
       });
   });
 };

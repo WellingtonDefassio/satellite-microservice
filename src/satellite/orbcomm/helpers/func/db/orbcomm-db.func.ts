@@ -86,7 +86,7 @@ export function findMessagesByStatus(prisma: PrismaService) {
   return messagesWithStatusCreated;
 }
 
-export async function findMessagesByOrbcommStatus(
+export function findMessagesByOrbcommStatus(
   prisma: PrismaService,
 ): Promise<SendMessagesOrbcomm[]> {
   const orbcommToUpdate = prisma.sendMessagesOrbcomm.findMany({
@@ -102,4 +102,13 @@ export async function findMessagesByOrbcommStatus(
     },
   });
   return orbcommToUpdate;
+}
+
+export function findNextMessage(prisma: PrismaService) {
+  const nextMessage = prisma.orbcommNextMessage.findFirst({
+    select: { nextMessage: true },
+    orderBy: [{ id: 'desc' }],
+    take: 1,
+  });
+  return nextMessage;
 }

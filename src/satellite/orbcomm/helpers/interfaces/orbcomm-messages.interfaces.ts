@@ -45,6 +45,12 @@ export interface MessageBodyGetStatus {
   password: string;
   fwIDs: number[];
 }
+export interface BodyToGetMessage {
+  access_id: any;
+  password: string;
+  include_raw_payload: boolean;
+  start_utc: string;
+}
 
 export enum OrbcommStatusMap {
   SUBMITTED = 0,
