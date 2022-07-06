@@ -1,9 +1,11 @@
 import { HttpService } from '@nestjs/axios';
 import {
   BodyToGetMessage,
+  DownloadResponse,
   ForwardStatuses,
   MessageBodyGetStatus,
   MessageBodyPost,
+  ReceiveDownloadData,
   Submission,
   verifyPostMessages,
 } from '../../index';
@@ -52,7 +54,7 @@ export const orbcommApiDownloadMessages = (
   body: BodyToGetMessage,
   http: HttpService,
 ) => {
-  return new Promise((resolve, reject) => {
+  return new Promise<DownloadResponse>((resolve, reject) => {
     http.axiosRef
       .get(
         'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_return_messages/',
@@ -61,7 +63,9 @@ export const orbcommApiDownloadMessages = (
         },
       )
       .then((apiResponse) => {
-        resolve(apiResponse.data);
+        const apiResponseData = apiResponse.data;
+        const previousMessage = body.start_utc;
+        resolve({ apiResponseData, previousMessage });
       });
   });
 };

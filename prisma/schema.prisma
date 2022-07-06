@@ -44,6 +44,7 @@ model Devices {
   updatedAt        DateTime         @updatedAt
   messages         SendMessages[]
   messagesGet      OrbcommGetMessage[]  
+  versionDevice    OrbcommVersionDevice?  
 
 }
 
@@ -65,8 +66,8 @@ model OrbcommGetMessage {
   messageId String @unique
   messageUTC DateTime
   receiveUTC DateTime
-  deviceId       String
-  device         Devices              @relation(fields: [deviceId], references: [deviceId])
+  deviceId       String?
+  device         Devices?              @relation(fields: [deviceId], references: [deviceId])
   SIN Int
   MIN Int
   payload String
@@ -76,6 +77,16 @@ model OrbcommGetMessage {
   transport Int
   mobileOwnerID String
 }
+
+model OrbcommVersionDevice {
+  id Int @default(autoincrement()) @id
+  deviceId       String? @unique
+  device         Devices?              @relation(fields: [deviceId], references: [deviceId])
+  name String
+  SIN Int
+  MIN Int
+  fields Json
+  }
 
 enum DeviceStatus {
   ACTIVE

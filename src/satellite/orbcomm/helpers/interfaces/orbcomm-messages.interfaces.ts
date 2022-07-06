@@ -51,6 +51,37 @@ export interface BodyToGetMessage {
   include_raw_payload: boolean;
   start_utc: string;
 }
+export interface ReceiveDownloadData {
+  ErrorID: number;
+  NextStartUTC: string;
+  Messages: ReceiveDownloadMessageData[];
+}
+interface ReceiveDownloadMessageData {
+  ID: number;
+  MessageUTC: string;
+  ReceiveUTC: string;
+  SIN: number;
+  MobileID: string;
+  RawPayload: number[];
+  Payload?: ReceivePayload;
+  RegionName: string;
+  OTAMessageSize: number;
+  CustomerID: number;
+  Transport: number;
+  MobileOwnerID: number;
+}
+
+interface ReceivePayload {
+  Name: string;
+  SIN: number;
+  MIN: number;
+  Fields: { Name: string; Value: string }[];
+}
+
+export interface DownloadResponse {
+  apiResponseData: ReceiveDownloadData;
+  previousMessage: string;
+}
 
 export enum OrbcommStatusMap {
   SUBMITTED = 0,

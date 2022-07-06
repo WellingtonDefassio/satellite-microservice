@@ -16,6 +16,7 @@ import {
   orbcommApiPostMessages,
   formatParamsToGetMessages,
   orbcommApiDownloadMessages,
+  createData,
 } from './helpers/index';
 
 @Injectable()
@@ -66,6 +67,8 @@ export class OrbcommService {
     findNextMessage(this.prisma)
       .then(formatParamsToGetMessages)
       .then((params) => orbcommApiDownloadMessages(params, this.http))
-      .then(console.log);
+      .then((apiResponse) => createData(apiResponse, this.prisma))
+      .then(console.log)
+      .catch(console.log);
   }
 }

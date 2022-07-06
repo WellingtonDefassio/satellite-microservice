@@ -2,6 +2,7 @@ import { OrbcommMessageStatus, SendMessagesOrbcomm } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   convertMessageStatus,
+  DownloadResponse,
   ForwardStatuses,
   OrbcommStatusMap,
   Submission,
@@ -111,4 +112,54 @@ export function findNextMessage(prisma: PrismaService) {
     take: 1,
   });
   return nextMessage;
+}
+
+export function createData(messages: DownloadResponse, prisma: PrismaService) {
+  const dataToPersist = [];
+  const nextMessage = prisma.orbcommNextMessage.create({
+    data: {
+      previousMessage: messages.previousMessage,
+      nextMessage: messages.apiResponseData.NextStartUTC,
+    },
+  });
+
+  messages.apiResponseData.Messages.forEach((message) => {
+    if (message.Payload) {
+      const payload = prisma.orbcommVersionDevice.upsert({
+        create: {
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
+        },
+        where: { deviceId: message.MobileID },
+
+        update: {
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
+        },
+      });
+      dataToPersist.push(payload);
+    }
+    const getMessage = prisma.orbcommGetMessage.create({
+      data: {
+        messageId: message.ID.toString(),
+        messageUTC: new Date(message.MessageUTC),
+        receiveUTC: new Date(message.ReceiveUTC),
+        deviceId: message.MobileID,
+        SIN: message.SIN,
+        MIN: message.RawPayload[1],
+        payload: message.RawPayload.toString(),
+        regionName: message.RegionName,
+        otaMessageSize: message.OTAMessageSize,
+        costumerID: message.CustomerID,
+        transport: message.Transport,
+        mobileOwnerID: message.MobileOwnerID.toString(),
+      },
+    });
+    dataToPersist.push(getMessage);
+  });
+  prisma.$transaction(dataToPersist);
 }
