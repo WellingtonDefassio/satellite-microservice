@@ -127,6 +127,7 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
     if (message.Payload) {
       const payload = prisma.orbcommVersionDevice.upsert({
         create: {
+          deviceId: message.MobileID,
           SIN: message.Payload.SIN,
           MIN: message.Payload.MIN,
           name: message.Payload.Name,

@@ -1,10 +1,8 @@
 import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
 import {
   BodyToGetMessage,
-  DownloadResponse,
   MessageBodyGetStatus,
   MessageBodyPost,
-  ReceiveDownloadData,
 } from '../../index';
 
 export function formatMessageToPost(messages: SendMessages[]): MessageBodyPost {
