@@ -52,6 +52,13 @@ model SatelliteGateway {
   devices Devices[]
 }
 
+model OrbcommNextMessage {
+  id Int  @default(autoincrement()) @id
+  previousMessage String
+  nextMessage String
+  createdAt DateTime @default(now())
+}
+
 enum DeviceStatus {
   ACTIVE
   DISABLED

@@ -45,3 +45,15 @@ export interface MessageBodyGetStatus {
   password: string;
   fwIDs: number[];
 }
+
+export enum OrbcommStatusMap {
+  SUBMITTED = 0,
+  RECEIVED = 1,
+  ERROR = 2,
+  DELIVERY_FAILED = 3,
+  TIMEOUT = 4,
+  CANCELLED = 5,
+  WAITING = 6,
+  INVALID = 7,
+  TRANSMITTED = 8,
+}
