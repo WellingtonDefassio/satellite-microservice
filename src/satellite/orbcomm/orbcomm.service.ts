@@ -17,6 +17,9 @@ import {
   formatParamsToGetMessages,
   orbcommApiDownloadMessages,
   createData,
+  orbcommDevices,
+  verifyNewDevices,
+  createDevicesOrbcomm,
 } from './helpers/index';
 
 @Injectable()
@@ -60,7 +63,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES PROCESS....');
 
@@ -70,5 +73,13 @@ export class OrbcommService {
       .then((apiResponse) => createData(apiResponse, this.prisma))
       .then(console.log)
       .catch(console.log);
+  }
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async updateDevices() {
+    orbcommDevices(this.http)
+      .then((apiResponse) => verifyNewDevices(apiResponse, this.prisma))
+      .then((newDevices) => createDevicesOrbcomm(newDevices, this.prisma))
+      .then(console.log)
+      .catch((erro) => console.log(erro.message));
   }
 }

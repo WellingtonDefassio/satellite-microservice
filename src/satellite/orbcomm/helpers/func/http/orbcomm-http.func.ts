@@ -1,11 +1,11 @@
 import { HttpService } from '@nestjs/axios';
 import {
   BodyToGetMessage,
+  DeviceApi,
   DownloadResponse,
   ForwardStatuses,
   MessageBodyGetStatus,
   MessageBodyPost,
-  ReceiveDownloadData,
   Submission,
   verifyPostMessages,
 } from '../../index';
@@ -63,6 +63,18 @@ export const orbcommApiDownloadMessages = (
         const apiResponseData = apiResponse.data;
         const previousMessage = body.start_utc;
         resolve({ apiResponseData, previousMessage });
+      });
+  });
+};
+
+export const orbcommDevices = (http: HttpService) => {
+  return new Promise<DeviceApi>((resolve, reject) => {
+    http.axiosRef
+      .get(
+        'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_terminals_info/?access_id=70002657&password=ZFLLYNJL',
+      )
+      .then((value) => {
+        resolve(value.data);
       });
   });
 };

@@ -83,6 +83,19 @@ export interface DownloadResponse {
   previousMessage: string;
 }
 
+export interface DeviceApi {
+  ErrorID: number;
+  Terminals: Terminals[];
+}
+
+export interface Terminals {
+  PrimeID: string;
+  Description: string;
+  LastRegistrationUTC: string;
+  RegionName: string;
+  MTSN: string;
+}
+
 export enum OrbcommStatusMap {
   SUBMITTED = 0,
   RECEIVED = 1,

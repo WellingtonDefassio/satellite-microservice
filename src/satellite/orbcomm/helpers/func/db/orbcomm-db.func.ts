@@ -2,10 +2,12 @@ import { OrbcommMessageStatus, SendMessagesOrbcomm } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   convertMessageStatus,
+  DeviceApi,
   DownloadResponse,
   ForwardStatuses,
   OrbcommStatusMap,
   Submission,
+  Terminals,
 } from '../../index';
 
 export function saveAndUpdateMessages(
@@ -163,4 +165,47 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
     dataToPersist.push(getMessage);
   });
   prisma.$transaction(dataToPersist);
+}
+
+export function verifyNewDevices(
+  apiResponse: DeviceApi,
+  prisma: PrismaService,
+) {
+  const listOfDevices = [];
+  apiResponse.Terminals.forEach((terminal) => {
+    const terminals = prisma.devices.findUnique({
+      where: { deviceId: terminal.PrimeID },
+    });
+    listOfDevices.push(terminals);
+  });
+  return prisma.$transaction(listOfDevices).then((value) => {
+    const newDevices: Terminals[] = [];
+    value.forEach((item, index) => {
+      if (!item) {
+        newDevices.push(apiResponse.Terminals[index]);
+      }
+    });
+    return newDevices;
+  });
+}
+
+export function createDevicesOrbcomm(
+  apiResponse: Terminals[],
+  prisma: PrismaService,
+) {
+  if (apiResponse === null) {
+    throw new Error('No more devices to created');
+  }
+  const orbcommDevicesList = [];
+  apiResponse.forEach((terminal) => {
+    const orbcommDevice = prisma.devices.create({
+      data: {
+        deviceId: terminal.PrimeID,
+        status: 'ACTIVE',
+        satelliteGateway: { connect: { name: 'ORBCOMM_V2' } },
+      },
+    });
+    orbcommDevicesList.push(orbcommDevice);
+  });
+  prisma.$transaction(orbcommDevicesList);
 }
