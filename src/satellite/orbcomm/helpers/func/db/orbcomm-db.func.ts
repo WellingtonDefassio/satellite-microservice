@@ -185,6 +185,9 @@ export function verifyNewDevices(
         newDevices.push(apiResponse.Terminals[index]);
       }
     });
+    if (!newDevices.length) {
+      throw new Error('No more devices to created');
+    }
     return newDevices;
   });
 }
@@ -193,9 +196,6 @@ export function createDevicesOrbcomm(
   apiResponse: Terminals[],
   prisma: PrismaService,
 ) {
-  if (apiResponse === null) {
-    throw new Error('No more devices to created');
-  }
   const orbcommDevicesList = [];
   apiResponse.forEach((terminal) => {
     const orbcommDevice = prisma.devices.create({
@@ -207,5 +207,5 @@ export function createDevicesOrbcomm(
     });
     orbcommDevicesList.push(orbcommDevice);
   });
-  prisma.$transaction(orbcommDevicesList);
+  return prisma.$transaction(orbcommDevicesList);
 }
