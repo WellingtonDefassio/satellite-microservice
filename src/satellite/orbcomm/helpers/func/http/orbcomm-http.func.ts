@@ -64,9 +64,13 @@ export const orbcommApiDownloadMessages = (
         const previousMessage = body.start_utc;
         resolve({ apiResponseData, previousMessage });
 <<<<<<< HEAD
+<<<<<<< HEAD
       })
 <<<<<<< Updated upstream
       .catch((error) => reject(error.message));
+=======
+      });
+>>>>>>> parent of 0ceb611 (start integration test)
 =======
       });
 >>>>>>> parent of 0ceb611 (start integration test)

@@ -143,7 +143,10 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
           name: message.Payload.Name,
           fields: message.Payload.Fields,
         },
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+>>>>>>> parent of 0ceb611 (start integration test)
       });
       dataToPersist.push(payload);
     }
@@ -164,6 +167,7 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
       },
     });
 <<<<<<< HEAD
+<<<<<<< HEAD
     prisma
       .$transaction(dataToPersist)
       .then(() => console.log('messages criadas com sucesso!'))
@@ -182,6 +186,11 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
   } catch (error) {
     throw new Error(error.message);
   }
+=======
+    dataToPersist.push(getMessage);
+  });
+  prisma.$transaction(dataToPersist);
+>>>>>>> parent of 0ceb611 (start integration test)
 =======
     dataToPersist.push(getMessage);
   });
