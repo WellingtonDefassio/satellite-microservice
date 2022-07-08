@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   messagesExists,
   formatMessageToPost,
@@ -26,7 +26,7 @@ import {
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  // @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async uploadMessage() {
     console.log('SEND MESSAGES PROCESS.....');
 
@@ -45,7 +45,7 @@ export class OrbcommService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMessages() {
     console.log('UPDATE MESSAGES PROCESS...');
 
@@ -63,23 +63,24 @@ export class OrbcommService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES PROCESS....');
 
     findNextMessage(this.prisma)
-      .then(formatParamsToGetMessages)
-      .then((params) => orbcommApiDownloadMessages(params, this.http))
-      .then((apiResponse) => createData(apiResponse, this.prisma))
-      .then(console.log)
+      // .then(formatParamsToGetMessages)
+      // .then((params) => orbcommApiDownloadMessages(params, this.http))
+      // .then((apiResponse) => createData(apiResponse, this.prisma))
+
       .catch(console.log);
   }
-  @Cron(CronExpression.EVERY_10_SECONDS)
+
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async updateDevices() {
     orbcommDevices(this.http)
       .then((apiResponse) => verifyNewDevices(apiResponse, this.prisma))
       .then((newDevices) => createDevicesOrbcomm(newDevices, this.prisma))
-      .then(console.log)
+
       .catch((erro) => console.log(erro.message));
   }
 }

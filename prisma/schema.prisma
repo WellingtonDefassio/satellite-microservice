@@ -70,7 +70,7 @@ model OrbcommGetMessage {
   device         Devices?              @relation(fields: [deviceId], references: [deviceId])
   SIN Int
   MIN Int
-  payload String
+  payload String @db.MediumText
   regionName String
   otaMessageSize Int
   costumerID Int
