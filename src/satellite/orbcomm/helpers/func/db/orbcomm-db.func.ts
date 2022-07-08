@@ -168,20 +168,55 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
     });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    dataToPersist.push(nextMessage);
+    messages.apiResponseData.Messages.forEach((message) => {
+      if (message.Payload) {
+        const payload = prisma.orbcommVersionDevice.upsert({
+          create: {
+            deviceId: message.MobileID,
+            SIN: message.Payload.SIN,
+            MIN: message.Payload.MIN,
+            name: message.Payload.Name,
+            fields: message.Payload.Fields,
+          },
+          where: { deviceId: message.MobileID },
+
+          update: {
+            SIN: message.Payload.SIN,
+            MIN: message.Payload.MIN,
+            name: message.Payload.Name,
+            fields: message.Payload.Fields,
+          },
+        });
+        dataToPersist.push(payload);
+      }
+      const getMessage = prisma.orbcommGetMessage.create({
+        data: {
+          messageId: message.ID.toString(),
+          messageUTC: new Date(message.MessageUTC),
+          receiveUTC: new Date(message.ReceiveUTC),
+          deviceId: message.MobileID,
+          SIN: message.SIN,
+          MIN: message.RawPayload[1],
+          payload: message.RawPayload.toString(),
+          regionName: message.RegionName,
+          otaMessageSize: message.OTAMessageSize,
+          costumerID: message.CustomerID,
+          transport: message.Transport,
+          mobileOwnerID: message.MobileOwnerID.toString(),
+        },
+      });
+
+      dataToPersist.push(getMessage);
+    });
+>>>>>>> parent of 9b7db02 (aa)
     prisma
       .$transaction(dataToPersist)
       .then(() => console.log('messages criadas com sucesso!'))
       .catch((error) => {
         throw new Error(error.message);
-=======
-        where: { deviceId: message.MobileID },
-        update: {
-          SIN: message.Payload.SIN,
-          MIN: message.Payload.MIN,
-          name: message.Payload.Name,
-          fields: message.Payload.Fields,
-        },
->>>>>>> Stashed changes
       });
   } catch (error) {
     throw new Error(error.message);

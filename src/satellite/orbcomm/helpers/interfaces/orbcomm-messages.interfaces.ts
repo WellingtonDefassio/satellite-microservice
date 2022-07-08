@@ -1,6 +1,6 @@
 export interface SubmitResponse {
   ErrorID: number;
-  Submissions: Submission[];
+  Submission: Submission[];
 }
 
 export interface Submission {

@@ -1,5 +1,5 @@
 import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
-import { Submission, SubmitResponse } from '../../index';
+import { Submission } from '../../index';
 
 export function convertMessageStatus(
   status: OrbcommMessageStatus,
@@ -25,6 +25,7 @@ export function convertMessageStatus(
 }
 
 export function messagesExists(messagesToUpload) {
+  console.log(messagesToUpload);
   if (!messagesToUpload.length) {
     throw new Error('no more messages available');
   } else {
@@ -32,10 +33,7 @@ export function messagesExists(messagesToUpload) {
   }
 }
 
-export const verifyPostMessages = (
-  sendedData,
-  responseData: SubmitResponse,
-): Submission[] => {
+export const verifyPostMessages = (sendedData, responseData): Submission[] => {
   const validItems: Submission[] = [];
   responseData.Submissions.map((apiResponse) => {
     const exists = sendedData.find(
