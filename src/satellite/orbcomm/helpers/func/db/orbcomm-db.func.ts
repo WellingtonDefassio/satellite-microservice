@@ -162,6 +162,7 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
           transport: message.Transport,
           mobileOwnerID: message.MobileOwnerID.toString(),
         },
+<<<<<<< Updated upstream
       });
 
       dataToPersist.push(getMessage);
@@ -171,6 +172,15 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
       .then(() => console.log('messages criadas com sucesso!'))
       .catch((error) => {
         throw new Error(error.message);
+=======
+        where: { deviceId: message.MobileID },
+        update: {
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
+        },
+>>>>>>> Stashed changes
       });
   } catch (error) {
     throw new Error(error.message);

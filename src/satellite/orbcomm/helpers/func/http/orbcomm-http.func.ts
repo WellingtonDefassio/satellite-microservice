@@ -67,6 +67,7 @@ export const orbcommApiDownloadMessages = (
         const previousMessage = body.start_utc;
         resolve({ apiResponseData, previousMessage });
       })
+<<<<<<< Updated upstream
       .catch((error) => reject(error.message));
   });
 };
@@ -80,5 +81,8 @@ export const orbcommDevices = (http: HttpService) => {
       .then((value) => {
         resolve(value.data);
       });
+=======
+      .catch((erro) => reject(erro.message));
+>>>>>>> Stashed changes
   });
 };
