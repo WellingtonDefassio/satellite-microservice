@@ -56,19 +56,20 @@ export const orbcommApiDownloadMessages = (
 ) => {
   return new Promise<DownloadResponse>((resolve, reject) => {
     http.axiosRef
-      .get(
-        'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_return_messages/',
-        {
-          params: body,
-        },
-      )
+      .get('http://localhost:3001/orbcomm/download', {
+        params: body,
+      })
       .then((apiResponse) => {
         const apiResponseData = apiResponse.data;
         const previousMessage = body.start_utc;
         resolve({ apiResponseData, previousMessage });
+<<<<<<< HEAD
       })
 <<<<<<< Updated upstream
       .catch((error) => reject(error.message));
+=======
+      });
+>>>>>>> parent of 0ceb611 (start integration test)
   });
 };
 

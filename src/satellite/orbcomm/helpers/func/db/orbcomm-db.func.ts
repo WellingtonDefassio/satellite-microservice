@@ -117,56 +117,53 @@ export function findNextMessage(prisma: PrismaService) {
 }
 
 export function createData(messages: DownloadResponse, prisma: PrismaService) {
-  try {
-    const dataToPersist = [];
-    const nextMessage = prisma.orbcommNextMessage.create({
-      data: {
-        previousMessage: messages.previousMessage,
-        nextMessage: messages.apiResponseData.NextStartUTC,
-      },
-    });
-    dataToPersist.push(nextMessage);
-    messages.apiResponseData.Messages.forEach((message) => {
-      if (message.Payload) {
-        const payload = prisma.orbcommVersionDevice.upsert({
-          create: {
-            deviceId: message.MobileID,
-            SIN: message.Payload.SIN,
-            MIN: message.Payload.MIN,
-            name: message.Payload.Name,
-            fields: message.Payload.Fields,
-          },
-          where: { deviceId: message.MobileID },
+  const dataToPersist = [];
+  const nextMessage = prisma.orbcommNextMessage.create({
+    data: {
+      previousMessage: messages.previousMessage,
+      nextMessage: messages.apiResponseData.NextStartUTC,
+    },
+  });
 
-          update: {
-            SIN: message.Payload.SIN,
-            MIN: message.Payload.MIN,
-            name: message.Payload.Name,
-            fields: message.Payload.Fields,
-          },
-        });
-        dataToPersist.push(payload);
-      }
-      const getMessage = prisma.orbcommGetMessage.create({
-        data: {
-          messageId: message.ID.toString(),
-          messageUTC: new Date(message.MessageUTC),
-          receiveUTC: new Date(message.ReceiveUTC),
+  messages.apiResponseData.Messages.forEach((message) => {
+    if (message.Payload) {
+      const payload = prisma.orbcommVersionDevice.upsert({
+        create: {
           deviceId: message.MobileID,
-          SIN: message.SIN,
-          MIN: message.RawPayload[1],
-          payload: message.RawPayload.toString(),
-          regionName: message.RegionName,
-          otaMessageSize: message.OTAMessageSize,
-          costumerID: message.CustomerID,
-          transport: message.Transport,
-          mobileOwnerID: message.MobileOwnerID.toString(),
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
+        },
+        where: { deviceId: message.MobileID },
+
+        update: {
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
         },
 <<<<<<< Updated upstream
       });
-
-      dataToPersist.push(getMessage);
+      dataToPersist.push(payload);
+    }
+    const getMessage = prisma.orbcommGetMessage.create({
+      data: {
+        messageId: message.ID.toString(),
+        messageUTC: new Date(message.MessageUTC),
+        receiveUTC: new Date(message.ReceiveUTC),
+        deviceId: message.MobileID,
+        SIN: message.SIN,
+        MIN: message.RawPayload[1],
+        payload: message.RawPayload.toString(),
+        regionName: message.RegionName,
+        otaMessageSize: message.OTAMessageSize,
+        costumerID: message.CustomerID,
+        transport: message.Transport,
+        mobileOwnerID: message.MobileOwnerID.toString(),
+      },
     });
+<<<<<<< HEAD
     prisma
       .$transaction(dataToPersist)
       .then(() => console.log('messages criadas com sucesso!'))
@@ -185,6 +182,11 @@ export function createData(messages: DownloadResponse, prisma: PrismaService) {
   } catch (error) {
     throw new Error(error.message);
   }
+=======
+    dataToPersist.push(getMessage);
+  });
+  prisma.$transaction(dataToPersist);
+>>>>>>> parent of 0ceb611 (start integration test)
 }
 
 export function verifyNewDevices(
