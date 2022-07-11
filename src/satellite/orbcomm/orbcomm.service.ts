@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -20,13 +21,16 @@ import {
   orbcommDevices,
   verifyNewDevices,
   createDevicesOrbcomm,
+  getString,
+  validateDownloadData,
+  createNextUtc,
 } from './helpers/index';
 
 @Injectable()
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_10_SECONDS)
   async uploadMessage() {
     console.log('SEND MESSAGES PROCESS.....');
 
@@ -45,7 +49,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMessages() {
     console.log('UPDATE MESSAGES PROCESS...');
 
@@ -63,20 +67,27 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES PROCESS....');
 
-    findNextMessage(this.prisma)
-      // .then(formatParamsToGetMessages)
-      // .then((params) => orbcommApiDownloadMessages(params, this.http))
-      // .then((apiResponse) => createData(apiResponse, this.prisma))
+    const body = await findNextMessage(this.prisma).then(formatParamsToGetMessages);
+    const downloadMessages = await orbcommApiDownloadMessages(body, this.http).then(validateDownloadData);
 
-      .catch(console.log);
+    const nextMessage = createNextUtc(body.start_utc, downloadMessages.NextStartUTC, this.prisma);   
+
+
+    const result = this.prisma.$transaction([nextMessage]);
+
+    console.log(result);
+    console.log(body);
+  
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async updateDevices() {
+    console.log('DEVICES UPLOAD START.....');
+
     orbcommDevices(this.http)
       .then((apiResponse) => verifyNewDevices(apiResponse, this.prisma))
       .then((newDevices) => createDevicesOrbcomm(newDevices, this.prisma))

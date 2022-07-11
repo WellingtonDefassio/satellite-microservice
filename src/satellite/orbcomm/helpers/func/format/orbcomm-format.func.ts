@@ -1,4 +1,5 @@
 import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
+import { empty } from '@prisma/client/runtime';
 import {
   BodyToGetMessage,
   MessageBodyGetStatus,
@@ -44,15 +45,23 @@ export function formatMessageToGetStatus(listOfFwrId: number[]) {
   return messageBodyPost;
 }
 
-export function formatParamsToGetMessages(nextMessage: {
-  nextMessage: string;
-}) {
-  const messageBodyToGet: BodyToGetMessage = {
-    access_id: 70002657,
-    password: 'ZFLLYNJL',
-    include_raw_payload: true,
-    start_utc: nextMessage.nextMessage,
-  };
-
-  return messageBodyToGet;
+export function formatParamsToGetMessages(
+  nextMessage: string,
+): BodyToGetMessage {
+  try {
+    const messageBodyToGet: BodyToGetMessage = {
+      access_id: 70002657,
+      password: 'ZFLLYNJL',
+      include_raw_payload: true,
+      start_utc: nextMessage,
+    };
+    Object.values(messageBodyToGet).forEach((value) => {
+      if (!!value === false) {
+        throw Error('Missing ParamsToGetMessages!!');
+      }
+    });
+    return messageBodyToGet;
+  } catch (error) {
+    throw Error(error.message);
+  }
 }

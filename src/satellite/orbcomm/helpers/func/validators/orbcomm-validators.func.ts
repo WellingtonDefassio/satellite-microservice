@@ -1,5 +1,5 @@
 import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
-import { Submission } from '../../index';
+import { ReceiveDownloadData, Submission } from '../../index';
 
 export function convertMessageStatus(
   status: OrbcommMessageStatus,
@@ -45,3 +45,14 @@ export const verifyPostMessages = (sendedData, responseData): Submission[] => {
   });
   return validItems;
 };
+
+export function validateDownloadData(
+  body: ReceiveDownloadData,
+): ReceiveDownloadData {
+  if (body.Messages === null) {
+    throw new Error('no more messages available');
+  }
+  if (body.ErrorID !== 0) {
+    throw new Error(`Error id ${body.ErrorID} check the api error!`);
+  } else return body;
+}

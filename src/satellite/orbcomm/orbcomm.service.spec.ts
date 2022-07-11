@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../prisma/prisma.service';
+import { findNextMessage } from './helpers';
 import { OrbcommService } from './orbcomm.service';
 
 const mockNextMessageReturn = {
@@ -22,7 +23,7 @@ describe('OrbcommService', () => {
           provide: PrismaService,
           useValue: {
             orbcommNextMessage: {
-              findFirst: jest.fn().mockReturnValue(mockNextMessageReturn),
+              findFirst: jest.fn().mockResolvedValue(mockNextMessageReturn),
             },
           },
         },
@@ -46,10 +47,12 @@ describe('OrbcommService', () => {
         .spyOn(prisma.orbcommNextMessage, 'findFirst')
         .mockImplementation(mockPrismaFindNextMessage);
 
-      service.downloadMessages();
+      findNextMessage(prisma);
 
       expect(mockPrismaFindNextMessage).toBeCalledWith({
         select: { nextMessage: true },
+        orderBy: [{ id: 'desc' }],
+        take: 1,
       });
     });
   });

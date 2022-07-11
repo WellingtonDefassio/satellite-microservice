@@ -6,6 +6,7 @@ import {
   ForwardStatuses,
   MessageBodyGetStatus,
   MessageBodyPost,
+  ReceiveDownloadData,
   Submission,
   verifyPostMessages,
 } from '../../index';
@@ -50,26 +51,26 @@ export const orbcommApiPostMessages = (
   });
 };
 
-export const orbcommApiDownloadMessages = (
+export async function orbcommApiDownloadMessages(
   body: BodyToGetMessage,
   http: HttpService,
-) => {
-  return new Promise<DownloadResponse>((resolve, reject) => {
-    http.axiosRef
+): Promise<ReceiveDownloadData> {
+  try {
+    return await http.axiosRef
       .get(
         'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_return_messages/',
         {
           params: body,
         },
       )
-      .then((apiResponse) => {
-        const apiResponseData = apiResponse.data;
-        const previousMessage = body.start_utc;
-        resolve({ apiResponseData, previousMessage });
-      })
-      .catch((error) => reject(error.message));
-  });
-};
+      .then((apiData) => apiData.data)
+      .catch((err) => {
+        throw new Error(err.message);
+      });
+  } catch (error) {
+    throw Error(error.message);
+  }
+}
 
 export const orbcommDevices = (http: HttpService) => {
   return new Promise<DeviceApi>((resolve, reject) => {

@@ -1,4 +1,9 @@
-import { OrbcommMessageStatus, SendMessagesOrbcomm } from '@prisma/client';
+import { NotFoundException } from '@nestjs/common';
+import {
+  OrbcommMessageStatus,
+  prisma,
+  SendMessagesOrbcomm,
+} from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   convertMessageStatus,
@@ -107,25 +112,34 @@ export function findMessagesByOrbcommStatus(
   return orbcommToUpdate;
 }
 
-export function findNextMessage(prisma: PrismaService) {
-  const nextMessage = prisma.orbcommNextMessage.findFirst({
+export async function findNextMessage(prisma: PrismaService): Promise<string> {
+  const lastMessage = await prisma.orbcommNextMessage.findFirst({
     select: { nextMessage: true },
     orderBy: [{ id: 'desc' }],
     take: 1,
   });
-  return nextMessage;
+  if (!lastMessage) {
+    throw new NotFoundException('NextMessage not found!');
+  }
+  return lastMessage.nextMessage;
+}
+
+export function createNextUtc(
+  previousMessage: string,
+  nextMessage: string,
+  prisma: PrismaService,
+) {
+  return prisma.orbcommNextMessage.create({
+    data: {
+      previousMessage,
+      nextMessage,
+    },
+  });
 }
 
 export function createData(messages: DownloadResponse, prisma: PrismaService) {
   try {
     const dataToPersist = [];
-    const nextMessage = prisma.orbcommNextMessage.create({
-      data: {
-        previousMessage: messages.previousMessage,
-        nextMessage: messages.apiResponseData.NextStartUTC,
-      },
-    });
-    dataToPersist.push(nextMessage);
     messages.apiResponseData.Messages.forEach((message) => {
       if (message.Payload) {
         const payload = prisma.orbcommVersionDevice.upsert({
@@ -218,4 +232,8 @@ export function createDevicesOrbcomm(
     orbcommDevicesList.push(orbcommDevice);
   });
   return prisma.$transaction(orbcommDevicesList);
+}
+
+export function getString(obj) {
+  return obj.nextMessage;
 }
