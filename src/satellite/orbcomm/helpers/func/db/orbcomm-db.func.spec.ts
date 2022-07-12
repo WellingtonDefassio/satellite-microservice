@@ -4,7 +4,6 @@ import { PrismaService } from '../../../../../prisma/prisma.service';
 import * as functions from '../../index';
 import { OrbcommService } from '../../../orbcomm.service';
 import { NotFoundException } from '@nestjs/common';
-import { upsertVersionMobile } from '../../index';
 
 const mockNextMessageReturn = {
   nextMessage: '2021-10-09 00:14:55',
@@ -396,26 +395,6 @@ describe('OrbcommService', () => {
         );
       });
     });
-    describe('formatParamsToGetMessages', () => {
-      it('should return a correct start_utc', () => {
-        const formattedParams = functions.formatParamsToGetMessages('10-10-10');
-
-        expect(formattedParams.start_utc).toEqual('10-10-10');
-      });
-      it('should return a object with correct body', () => {
-        const formattedParams = functions.formatParamsToGetMessages('any_data');
-
-        expect(formattedParams).toHaveProperty('access_id');
-        expect(formattedParams).toHaveProperty('password');
-        expect(formattedParams).toHaveProperty('start_utc');
-        expect(formattedParams).toHaveProperty('include_raw_payload');
-      });
-      it('should throw if not provides all params to getMessageApi', () => {
-        expect(() => {
-          functions.formatParamsToGetMessages('');
-        }).toThrowError('Missing ParamsToGetMessages!!');
-      });
-    });
     describe('orbcommApiDownloadMessages', () => {
       it('should return get with correct data', async () => {
         const apiResponse = await functions.orbcommApiDownloadMessages(
@@ -536,26 +515,29 @@ describe('OrbcommService', () => {
       it('should call orbcommVersionDevice.upsert when upsertVersionMobile is call', async () => {
         const spyUpsert = jest.spyOn(prisma.orbcommVersionDevice, 'upsert');
 
-        upsertVersionMobile(mockDownloadMessageReturn, prisma);
+        functions.upsertVersionMobile(mockDownloadMessageReturn, prisma);
 
         expect(spyUpsert).toBeCalledTimes(1);
       });
       it('should call orbcommVersionDevice.upsert 2 times when 2 payloadObjects is provide ', async () => {
         const spyUpsert = jest.spyOn(prisma.orbcommVersionDevice, 'upsert');
 
-        upsertVersionMobile(mockDownloadMessage2Return, prisma);
+        functions.upsertVersionMobile(mockDownloadMessage2Return, prisma);
 
         expect(spyUpsert).toBeCalledTimes(2);
       });
       it('should not call orbcommVersionDevice.upsert if no payloadObjects is provide ', async () => {
         const spyUpsert = jest.spyOn(prisma.orbcommVersionDevice, 'upsert');
 
-        upsertVersionMobile(mockDownloadWithoutPayload, prisma);
+        functions.upsertVersionMobile(mockDownloadWithoutPayload, prisma);
 
         expect(spyUpsert).toBeCalledTimes(0);
       });
       it('should return a empty array if no payloadObjects is provide', async () => {
-        const result = upsertVersionMobile(mockDownloadWithoutPayload, prisma);
+        const result = functions.upsertVersionMobile(
+          mockDownloadWithoutPayload,
+          prisma,
+        );
 
         expect(result).toEqual([]);
       });
@@ -564,7 +546,7 @@ describe('OrbcommService', () => {
           .spyOn(prisma.orbcommVersionDevice, 'upsert')
           .mockResolvedValue(mockOrbcommVersionDeviceResolved);
 
-        upsertVersionMobile(mockDownloadMessageReturn, prisma);
+        functions.upsertVersionMobile(mockDownloadMessageReturn, prisma);
 
         expect(mockResult).toBeCalledWith({
           create: {
