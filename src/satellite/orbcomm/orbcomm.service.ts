@@ -76,23 +76,12 @@ export class OrbcommService {
     const bodyToPost = await findNextMessage(this.prisma).then(formatParamsToGetMessages);
     const downloadMessages = await orbcommApiDownloadMessages(bodyToPost, this.http).then(validateDownloadData);
 
-   
-
     const nextMessage = createNextUtc(bodyToPost.start_utc, downloadMessages.NextStartUTC, this.prisma);   
     const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
-
-    
-
-  
-
-
+ 
     const result =  this.prisma.$transaction([...versionMobile]);
-
    
-
    //TODO metodo para separar caso o retorno do prisma seja vazio -> sugestão if !x.length pula...
-
-  
   
   }
 

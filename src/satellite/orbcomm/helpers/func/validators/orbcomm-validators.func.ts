@@ -25,7 +25,6 @@ export function convertMessageStatus(
 }
 
 export function messagesExists(messagesToUpload) {
-  console.log(messagesToUpload);
   if (!messagesToUpload.length) {
     throw new Error('no more messages available');
   } else {
@@ -45,6 +44,8 @@ export const verifyPostMessages = (sendedData, responseData): Submission[] => {
   });
   return validItems;
 };
+
+//TESTED
 
 export function validateDownloadData(
   body: ReceiveDownloadData,

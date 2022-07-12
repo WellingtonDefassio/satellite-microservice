@@ -16,12 +16,6 @@ const mockNextMessageCreated = {
   createdAt: '2022-07-07 16:49:00',
 };
 
-const mockBodyToGetMessage = {
-  access_id: 70002657,
-  password: 'ZFLLYNJL',
-  include_raw_payload: true,
-  start_utc: 'any_data',
-};
 const mockDownloadWithoutPayload = {
   ErrorID: 0,
   NextStartUTC: '2022-07-06 19:25:33',
@@ -308,7 +302,7 @@ const mockOrbcommVersionDeviceResolved = {
   ],
 };
 
-describe('OrbcommService', () => {
+describe('Orbcomm-db-func', () => {
   let service: OrbcommService;
   let prisma: PrismaService;
   let http: HttpService;
@@ -366,7 +360,9 @@ describe('OrbcommService', () => {
           .spyOn(prisma.orbcommNextMessage, 'findFirst')
           .mockImplementationOnce(mockPrismaFindNextMessage);
 
-        functions.findNextMessage(prisma).then((value) => console.log(value));
+        functions.findNextMessage(prisma).then((value) => {
+          return;
+        });
 
         expect(mockPrismaFindNextMessage).toBeCalledWith({
           select: { nextMessage: true },
@@ -396,52 +392,6 @@ describe('OrbcommService', () => {
       });
     });
 
-    describe('validateDownloadData', () => {
-      const mockDownloadMessageErrorID = {
-        ErrorID: 100,
-        NextStartUTC: '2022-07-06 19:25:33',
-        Messages: [
-          {
-            ID: 11326754042,
-            MessageUTC: '2022-07-06 17:13:52',
-            ReceiveUTC: '2022-07-06 17:13:52',
-            SIN: 130,
-            MobileID: '01597865SKYFA8A',
-            RawPayload: [
-              130, 7, 19, 98, 197, 194, 179, 193, 212, 150, 22, 194, 73, 183,
-              163, 0, 10,
-            ],
-            RegionName: 'AORWSC',
-            OTAMessageSize: 17,
-            CustomerID: 0,
-            Transport: 1,
-            MobileOwnerID: 60002657,
-          },
-        ],
-      };
-      const mockDownloadMessagesNull = {
-        ErrorID: 0,
-        NextStartUTC: '2022-07-06 19:25:33',
-        Messages: null,
-      };
-
-      it('should the same input body if not throws', () => {
-        const correctBody = functions.validateDownloadData(
-          mockDownloadMessageReturn,
-        );
-        expect(correctBody).toEqual(mockDownloadMessageReturn);
-      });
-      it('should throws if api return ErrorID different of zero 0 ', () => {
-        expect(() =>
-          functions.validateDownloadData(mockDownloadMessageErrorID),
-        ).toThrowError('Error id 100 check the api error!');
-      });
-      it('should throws if api return messages with null params ', () => {
-        expect(() =>
-          functions.validateDownloadData(mockDownloadMessagesNull),
-        ).toThrowError('no more messages available');
-      });
-    });
     describe('createNextUtc', () => {
       const mockPrismaCreateNextMessage = jest
         .fn()

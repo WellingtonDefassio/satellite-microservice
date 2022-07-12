@@ -86,7 +86,7 @@ const mockDownloadMessageReturn = {
   ],
 };
 
-describe('orbcomm-validators', () => {
+describe('Orbcomm-validators', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
   });

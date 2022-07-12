@@ -51,6 +51,20 @@ export const orbcommApiPostMessages = (
   });
 };
 
+export const orbcommDevices = (http: HttpService) => {
+  return new Promise<DeviceApi>((resolve, reject) => {
+    http.axiosRef
+      .get(
+        'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_terminals_info/?access_id=70002657&password=ZFLLYNJL',
+      )
+      .then((value) => {
+        resolve(value.data);
+      });
+  });
+};
+
+///TESTED!!
+
 export async function orbcommApiDownloadMessages(
   body: BodyToGetMessage,
   http: HttpService,
@@ -68,15 +82,3 @@ export async function orbcommApiDownloadMessages(
     throw Error(error.message);
   }
 }
-
-export const orbcommDevices = (http: HttpService) => {
-  return new Promise<DeviceApi>((resolve, reject) => {
-    http.axiosRef
-      .get(
-        'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_terminals_info/?access_id=70002657&password=ZFLLYNJL',
-      )
-      .then((value) => {
-        resolve(value.data);
-      });
-  });
-};

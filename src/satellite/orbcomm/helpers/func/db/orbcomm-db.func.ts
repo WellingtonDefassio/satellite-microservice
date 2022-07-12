@@ -115,64 +115,6 @@ export function findMessagesByOrbcommStatus(
   return orbcommToUpdate;
 }
 
-export async function findNextMessage(prisma: PrismaService): Promise<string> {
-  const lastMessage = await prisma.orbcommNextMessage.findFirst({
-    select: { nextMessage: true },
-    orderBy: [{ id: 'desc' }],
-    take: 1,
-  });
-  if (!lastMessage) {
-    throw new NotFoundException('NextMessage not found!');
-  }
-  return lastMessage.nextMessage;
-}
-
-export function createNextUtc(
-  previousMessage: string,
-  nextMessage: string,
-  prisma: PrismaService,
-) {
-  try {
-    return prisma.orbcommNextMessage.create({
-      data: {
-        previousMessage,
-        nextMessage,
-      },
-    });
-  } catch (error) {
-    throw new Error(error.message);
-  }
-}
-export function upsertVersionMobile(
-  downloadMessages: ReceiveDownloadData,
-  prisma: PrismaService,
-) {
-  const messagesWithPayload = filterPayload(downloadMessages);
-
-  const payloadPromiseList = [];
-
-  messagesWithPayload.forEach((message) => {
-    const payloadPromise = prisma.orbcommVersionDevice.upsert({
-      create: {
-        deviceId: message.MobileID,
-        SIN: message.Payload.SIN,
-        MIN: message.Payload.MIN,
-        name: message.Payload.Name,
-        fields: message.Payload.Fields,
-      },
-      where: { deviceId: message.MobileID },
-      update: {
-        SIN: message.Payload.SIN,
-        MIN: message.Payload.MIN,
-        name: message.Payload.Name,
-        fields: message.Payload.Fields,
-      },
-    });
-    payloadPromiseList.push(payloadPromise);
-  });
-  return payloadPromiseList;
-}
-
 export function createData(messages: DownloadResponse, prisma: PrismaService) {
   try {
     const dataToPersist = [];
@@ -272,4 +214,65 @@ export function createDevicesOrbcomm(
 
 export function getString(obj) {
   return obj.nextMessage;
+}
+
+// TESTED!!
+
+export async function findNextMessage(prisma: PrismaService): Promise<string> {
+  const lastMessage = await prisma.orbcommNextMessage.findFirst({
+    select: { nextMessage: true },
+    orderBy: [{ id: 'desc' }],
+    take: 1,
+  });
+  if (!lastMessage) {
+    throw new NotFoundException('NextMessage not found!');
+  }
+  return lastMessage.nextMessage;
+}
+
+export function upsertVersionMobile(
+  downloadMessages: ReceiveDownloadData,
+  prisma: PrismaService,
+) {
+  const messagesWithPayload = filterPayload(downloadMessages);
+
+  const payloadPromiseList = [];
+
+  messagesWithPayload.forEach((message) => {
+    const payloadPromise = prisma.orbcommVersionDevice.upsert({
+      create: {
+        deviceId: message.MobileID,
+        SIN: message.Payload.SIN,
+        MIN: message.Payload.MIN,
+        name: message.Payload.Name,
+        fields: message.Payload.Fields,
+      },
+      where: { deviceId: message.MobileID },
+      update: {
+        SIN: message.Payload.SIN,
+        MIN: message.Payload.MIN,
+        name: message.Payload.Name,
+        fields: message.Payload.Fields,
+      },
+    });
+    payloadPromiseList.push(payloadPromise);
+  });
+  return payloadPromiseList;
+}
+
+export function createNextUtc(
+  previousMessage: string,
+  nextMessage: string,
+  prisma: PrismaService,
+) {
+  try {
+    return prisma.orbcommNextMessage.create({
+      data: {
+        previousMessage,
+        nextMessage,
+      },
+    });
+  } catch (error) {
+    throw new Error(error.message);
+  }
 }

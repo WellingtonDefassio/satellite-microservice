@@ -42,9 +42,10 @@ export function formatMessageToGetStatus(listOfFwrId: number[]) {
   listOfFwrId.forEach((n) => {
     messageBodyPost.fwIDs.push(n);
   });
-  console.log(messageBodyPost);
   return messageBodyPost;
 }
+
+//tested!
 
 export function formatParamsToGetMessages(
   nextMessage: string,
