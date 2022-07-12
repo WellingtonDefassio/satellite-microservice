@@ -395,35 +395,7 @@ describe('OrbcommService', () => {
         );
       });
     });
-    describe('orbcommApiDownloadMessages', () => {
-      it('should return get with correct data', async () => {
-        const apiResponse = await functions.orbcommApiDownloadMessages(
-          mockBodyToGetMessage,
-          http,
-        );
-        expect(apiResponse).toEqual(mockDownloadMessageReturn);
-      });
-      it('should call get when orbcommApiDownload is call', () => {
-        const spyHttp = jest.spyOn(http.axiosRef, 'get');
 
-        functions.orbcommApiDownloadMessages(mockBodyToGetMessage, http);
-
-        expect(spyHttp).toHaveBeenCalledTimes(1);
-      });
-      it('should throws if get throws', async () => {
-        jest.spyOn(http.axiosRef, 'get').mockImplementationOnce(() => {
-          throw new Error('Any Error');
-        });
-
-        expect(
-          async () =>
-            await functions.orbcommApiDownloadMessages(
-              mockBodyToGetMessage,
-              http,
-            ),
-        ).rejects.toThrowError('Any Error');
-      });
-    });
     describe('validateDownloadData', () => {
       const mockDownloadMessageErrorID = {
         ErrorID: 100,
