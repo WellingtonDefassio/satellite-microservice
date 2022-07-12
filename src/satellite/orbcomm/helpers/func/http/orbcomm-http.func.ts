@@ -57,12 +57,9 @@ export async function orbcommApiDownloadMessages(
 ): Promise<ReceiveDownloadData> {
   try {
     return await http.axiosRef
-      .get(
-        'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_return_messages/',
-        {
-          params: body,
-        },
-      )
+      .get('http://localhost:3001/orbcomm/download', {
+        params: body,
+      })
       .then((apiData) => apiData.data)
       .catch((err) => {
         throw new Error(err.message);

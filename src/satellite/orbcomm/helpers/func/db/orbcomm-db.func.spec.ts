@@ -274,6 +274,16 @@ describe('OrbcommService', () => {
           functions.createNextUtc(previousMessage, nextMessage, prisma),
         ).toEqual(mockNextMessageCreated);
       });
+      it('should return a empty array if no messages.payload is provide', async () => {
+        //TODO
+        jest
+          .spyOn(prisma.orbcommNextMessage, 'create')
+          .mockImplementation(mockPrismaCreateNextMessage);
+
+        expect(
+          functions.createNextUtc(previousMessage, nextMessage, prisma),
+        ).toEqual(mockNextMessageCreated);
+      });
     });
   });
 });

@@ -81,11 +81,10 @@ export class OrbcommService {
     const nextMessage = createNextUtc(body.start_utc, downloadMessages.NextStartUTC, this.prisma);   
     const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
 
-   
 
-    const result = this.prisma.$transaction([...versionMobile]);
+    // const result = this.prisma.$transaction([...versionMobile, nextMessage]);
 
-
+   //TODO metodo para separar caso o retorno do prisma seja vazio
 
      console.log(body);
   
