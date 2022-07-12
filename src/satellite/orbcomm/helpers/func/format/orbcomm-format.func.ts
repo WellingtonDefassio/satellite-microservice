@@ -4,6 +4,8 @@ import {
   BodyToGetMessage,
   MessageBodyGetStatus,
   MessageBodyPost,
+  ReceiveDownloadData,
+  ReceiveDownloadMessageData,
 } from '../../index';
 
 export function formatMessageToPost(messages: SendMessages[]): MessageBodyPost {
@@ -64,4 +66,10 @@ export function formatParamsToGetMessages(
   } catch (error) {
     throw Error(error.message);
   }
+}
+
+export function filterPayload(
+  downloadMessages: ReceiveDownloadData,
+): ReceiveDownloadMessageData[] {
+  return downloadMessages.Messages.filter((message) => message.Payload);
 }

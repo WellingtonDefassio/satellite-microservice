@@ -24,6 +24,8 @@ import {
   getString,
   validateDownloadData,
   createNextUtc,
+  filterPayload,
+  upsertVersionMobile,
 } from './helpers/index';
 
 @Injectable()
@@ -67,20 +69,25 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES PROCESS....');
 
     const body = await findNextMessage(this.prisma).then(formatParamsToGetMessages);
     const downloadMessages = await orbcommApiDownloadMessages(body, this.http).then(validateDownloadData);
 
+   
+
     const nextMessage = createNextUtc(body.start_utc, downloadMessages.NextStartUTC, this.prisma);   
+    const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
+
+   
+
+    const result = this.prisma.$transaction([...versionMobile]);
 
 
-    const result = this.prisma.$transaction([nextMessage]);
 
-    console.log(result);
-    console.log(body);
+     console.log(body);
   
   }
 

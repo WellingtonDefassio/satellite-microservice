@@ -9,8 +9,11 @@ import {
   convertMessageStatus,
   DeviceApi,
   DownloadResponse,
+  filterPayload,
   ForwardStatuses,
   OrbcommStatusMap,
+  ReceiveDownloadData,
+  ReceiveDownloadMessageData,
   Submission,
   Terminals,
 } from '../../index';
@@ -135,6 +138,37 @@ export function createNextUtc(
       nextMessage,
     },
   });
+}
+export function upsertVersionMobile(
+  downloadMessages: ReceiveDownloadData,
+  prisma: PrismaService,
+) {
+  const messagesWithPayload = filterPayload(downloadMessages);
+  if (!messagesWithPayload) return;
+
+  const payloadPromiseList = [];
+
+  messagesWithPayload.forEach((message) => {
+    const payloadPromise = prisma.orbcommVersionDevice.upsert({
+      create: {
+        deviceId: message.MobileID,
+        SIN: message.Payload.SIN,
+        MIN: message.Payload.MIN,
+        name: message.Payload.Name,
+        fields: message.Payload.Fields,
+      },
+      where: { deviceId: message.MobileID },
+
+      update: {
+        SIN: message.Payload.SIN,
+        MIN: message.Payload.MIN,
+        name: message.Payload.Name,
+        fields: message.Payload.Fields,
+      },
+    });
+    payloadPromiseList.push(payloadPromise);
+  });
+  return payloadPromiseList;
 }
 
 export function createData(messages: DownloadResponse, prisma: PrismaService) {

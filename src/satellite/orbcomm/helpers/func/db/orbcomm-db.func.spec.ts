@@ -245,7 +245,35 @@ describe('OrbcommService', () => {
       });
     });
     describe('createNextUtc', () => {
-      it('should call orbcommNextMessage.create with corrects params', () => {});
+      const mockPrismaCreateNextMessage = jest
+        .fn()
+        .mockReturnValue(mockNextMessageCreated);
+
+      const previousMessage = 'any_previousMessage';
+      const nextMessage = 'any_nextMessage';
+      it('should call orbcommNextMessage.create with corrects params', async () => {
+        jest
+          .spyOn(prisma.orbcommNextMessage, 'create')
+          .mockImplementationOnce(mockPrismaCreateNextMessage);
+
+        functions.createNextUtc(previousMessage, nextMessage, prisma);
+
+        expect(mockPrismaCreateNextMessage).toBeCalledWith({
+          data: {
+            previousMessage,
+            nextMessage,
+          },
+        });
+      });
+      it('should orbcommNextMessage.create return correct value', async () => {
+        jest
+          .spyOn(prisma.orbcommNextMessage, 'create')
+          .mockImplementation(mockPrismaCreateNextMessage);
+
+        expect(
+          functions.createNextUtc(previousMessage, nextMessage, prisma),
+        ).toEqual(mockNextMessageCreated);
+      });
     });
   });
 });

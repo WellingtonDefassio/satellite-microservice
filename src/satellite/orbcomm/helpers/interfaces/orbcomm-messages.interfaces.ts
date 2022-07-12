@@ -56,7 +56,7 @@ export interface ReceiveDownloadData {
   NextStartUTC: string;
   Messages: ReceiveDownloadMessageData[];
 }
-interface ReceiveDownloadMessageData {
+export interface ReceiveDownloadMessageData {
   ID: number;
   MessageUTC: string;
   ReceiveUTC: string;
