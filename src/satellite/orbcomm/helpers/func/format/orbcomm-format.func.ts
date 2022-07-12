@@ -1,5 +1,4 @@
 import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
-import { empty } from '@prisma/client/runtime';
 import {
   BodyToGetMessage,
   MessageBodyGetStatus,
