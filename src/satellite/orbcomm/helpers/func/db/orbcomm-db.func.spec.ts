@@ -302,6 +302,21 @@ const mockOrbcommVersionDeviceResolved = {
   ],
 };
 
+const mockGetMessageResolved = {
+  id: 6794,
+  messageId: '11335689262',
+  messageUTC: new Date('2022-07-01 13:00:00'),
+  receiveUTC: new Date('2022-07-01 13:00:00'),
+  deviceId: '01719703SKYFE30',
+  SIN: 130,
+  MIN: 7,
+  payload: '130,7,211,98,199,84,46,193,143,78,235,194,51,96,26,22,180,2,241',
+  regionName: 'AORWSC',
+  otaMessageSize: 19,
+  costumerID: 0,
+  transport: 1,
+  mobileOwnerID: '60002657',
+};
 describe('Orbcomm-db-func', () => {
   let service: OrbcommService;
   let prisma: PrismaService;
@@ -324,13 +339,16 @@ describe('Orbcomm-db-func', () => {
                 .fn()
                 .mockResolvedValue(mockOrbcommVersionDeviceResolved),
             },
+            orbcommGetMessage: {
+              create: jest.fn().mockResolvedValue(mockGetMessageResolved),
+            },
           },
         },
         {
           provide: HttpService,
           useValue: {
             axiosRef: {
-              get: jest.fn().mockResolvedValue(mockDownloadMessageReturn),
+              get: jest.fn().mockReturnValue(mockDownloadMessageReturn),
             },
           },
         },
@@ -463,7 +481,7 @@ describe('Orbcomm-db-func', () => {
 
         expect(result).toEqual([]);
       });
-      it('should call prisma.orbcommNextMessage.findFirst with correct params', async () => {
+      it('should call prisma.orbcommVersionDevice.upsert with correct params', async () => {
         const mockResult = jest
           .spyOn(prisma.orbcommVersionDevice, 'upsert')
           .mockResolvedValue(mockOrbcommVersionDeviceResolved);
@@ -486,6 +504,43 @@ describe('Orbcomm-db-func', () => {
             fields: mockDownloadMessageReturn.Messages[0].Payload.Fields,
           },
         });
+      });
+    });
+    describe('createGetMessages', () => {
+      it('should call orbcommGetMessage.create when createGetMessages is call', async () => {
+        const spyCreate = jest.spyOn(prisma.orbcommGetMessage, 'create');
+
+        functions.createGetMessages(mockDownloadMessageReturn, prisma);
+        expect(spyCreate).toBeCalledTimes(1);
+      });
+      it('should call orbcommGetMessage.create 2 times when 2 messages is provide', async () => {
+        const spyCreate = jest.spyOn(prisma.orbcommGetMessage, 'create');
+
+        functions.createGetMessages(mockDownloadMessage2Return, prisma);
+        expect(spyCreate).toBeCalledTimes(2);
+      });
+      it('should call orbcommGetMessage.create with correct params', async () => {
+        const spyCreate = jest.spyOn(prisma.orbcommGetMessage, 'create');
+
+        functions.createGetMessages(mockDownloadMessageReturn, prisma);
+        const transformData = functions.formatGetMessages(
+          mockDownloadMessageReturn,
+        );
+
+        expect(spyCreate).toBeCalledWith({ data: transformData[0] });
+      });
+
+      it('should return a create message', async () => {
+        jest
+          .spyOn(prisma.orbcommGetMessage, 'create')
+          .mockResolvedValue(mockGetMessageResolved);
+
+        const result = functions.createGetMessages(
+          mockDownloadMessageReturn,
+          prisma,
+        );
+
+        expect(result[0]).resolves.toEqual(mockGetMessageResolved);
       });
     });
   });

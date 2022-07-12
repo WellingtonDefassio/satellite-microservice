@@ -1,7 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import {
+  OrbcommGetMessage,
   OrbcommMessageStatus,
   prisma,
+  PrismaPromise,
   SendMessagesOrbcomm,
 } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,6 +12,7 @@ import {
   DeviceApi,
   DownloadResponse,
   filterPayload,
+  formatGetMessages,
   ForwardStatuses,
   OrbcommStatusMap,
   ReceiveDownloadData,
@@ -113,60 +116,6 @@ export function findMessagesByOrbcommStatus(
     },
   });
   return orbcommToUpdate;
-}
-
-export function createData(messages: DownloadResponse, prisma: PrismaService) {
-  try {
-    const dataToPersist = [];
-    messages.apiResponseData.Messages.forEach((message) => {
-      if (message.Payload) {
-        const payload = prisma.orbcommVersionDevice.upsert({
-          create: {
-            deviceId: message.MobileID,
-            SIN: message.Payload.SIN,
-            MIN: message.Payload.MIN,
-            name: message.Payload.Name,
-            fields: message.Payload.Fields,
-          },
-          where: { deviceId: message.MobileID },
-
-          update: {
-            SIN: message.Payload.SIN,
-            MIN: message.Payload.MIN,
-            name: message.Payload.Name,
-            fields: message.Payload.Fields,
-          },
-        });
-        dataToPersist.push(payload);
-      }
-      const getMessage = prisma.orbcommGetMessage.create({
-        data: {
-          messageId: message.ID.toString(),
-          messageUTC: new Date(message.MessageUTC),
-          receiveUTC: new Date(message.ReceiveUTC),
-          deviceId: message.MobileID,
-          SIN: message.SIN,
-          MIN: message.RawPayload[1],
-          payload: message.RawPayload.toString(),
-          regionName: message.RegionName,
-          otaMessageSize: message.OTAMessageSize,
-          costumerID: message.CustomerID,
-          transport: message.Transport,
-          mobileOwnerID: message.MobileOwnerID.toString(),
-        },
-      });
-
-      dataToPersist.push(getMessage);
-    });
-    prisma
-      .$transaction(dataToPersist)
-      .then(() => console.log('messages criadas com sucesso!'))
-      .catch((error) => {
-        throw new Error(error.message);
-      });
-  } catch (error) {
-    throw new Error(error.message);
-  }
 }
 
 export function verifyNewDevices(
@@ -275,4 +224,17 @@ export function createNextUtc(
   } catch (error) {
     throw new Error(error.message);
   }
+}
+
+export function createGetMessages(
+  downloadMessages: ReceiveDownloadData,
+  prisma: PrismaService,
+) {
+  const formattedMessages = formatGetMessages(downloadMessages);
+
+  return formattedMessages.map((message) => {
+    return prisma.orbcommGetMessage.create({
+      data: message,
+    });
+  });
 }

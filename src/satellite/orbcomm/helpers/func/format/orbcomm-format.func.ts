@@ -45,6 +45,25 @@ export function formatMessageToGetStatus(listOfFwrId: number[]) {
   return messageBodyPost;
 }
 
+export function formatGetMessages(downloadMessages: ReceiveDownloadData) {
+  return downloadMessages.Messages.map((message) => {
+    return {
+      messageId: message.ID.toString(),
+      messageUTC: new Date(message.MessageUTC),
+      receiveUTC: new Date(message.ReceiveUTC),
+      deviceId: message.MobileID,
+      SIN: message.SIN,
+      MIN: message.RawPayload[1],
+      payload: message.RawPayload.toString(),
+      regionName: message.RegionName,
+      otaMessageSize: message.OTAMessageSize,
+      costumerID: message.CustomerID,
+      transport: message.Transport,
+      mobileOwnerID: message.MobileOwnerID.toString(),
+    };
+  });
+}
+
 //tested!
 
 export function formatParamsToGetMessages(

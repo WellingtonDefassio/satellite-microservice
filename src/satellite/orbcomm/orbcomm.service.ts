@@ -17,7 +17,6 @@ import {
   orbcommApiPostMessages,
   formatParamsToGetMessages,
   orbcommApiDownloadMessages,
-  createData,
   orbcommDevices,
   verifyNewDevices,
   createDevicesOrbcomm,
@@ -26,6 +25,7 @@ import {
   createNextUtc,
   filterPayload,
   upsertVersionMobile,
+  createGetMessages,
 } from './helpers/index';
 
 @Injectable()
@@ -78,8 +78,13 @@ export class OrbcommService {
 
     const nextMessage = createNextUtc(bodyToPost.start_utc, downloadMessages.NextStartUTC, this.prisma);   
     const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
+    const getMessages = createGetMessages(downloadMessages, this.prisma)
+
+    console.log(getMessages)
+    
  
-    const result =  this.prisma.$transaction([...versionMobile]);
+  //  const result = await this.prisma.$transaction(getMessages);
+
    
    //TODO metodo para separar caso o retorno do prisma seja vazio -> sugestão if !x.length pula...
   
