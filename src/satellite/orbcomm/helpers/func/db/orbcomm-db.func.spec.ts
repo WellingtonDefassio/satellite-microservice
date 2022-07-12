@@ -4,6 +4,7 @@ import { PrismaService } from '../../../../../prisma/prisma.service';
 import * as functions from '../../index';
 import { OrbcommService } from '../../../orbcomm.service';
 import { NotFoundException } from '@nestjs/common';
+import { upsertVersionMobile } from '../../index';
 
 const mockNextMessageReturn = {
   nextMessage: '2021-10-09 00:14:55',
@@ -22,8 +23,7 @@ const mockBodyToGetMessage = {
   include_raw_payload: true,
   start_utc: 'any_data',
 };
-
-const mockDownloadMessageReturn = {
+const mockDownloadWithoutPayload = {
   ErrorID: 0,
   NextStartUTC: '2022-07-06 19:25:33',
   Messages: [
@@ -46,6 +46,269 @@ const mockDownloadMessageReturn = {
   ],
 };
 
+const mockDownloadMessageReturn = {
+  ErrorID: 0,
+  NextStartUTC: '2022-07-06 19:25:33',
+  Messages: [
+    {
+      ID: 11326754042,
+      MessageUTC: '2022-07-06 17:13:52',
+      ReceiveUTC: '2022-07-06 17:13:52',
+      SIN: 130,
+      MobileID: '01597865SKYFA8A',
+      RawPayload: [
+        130, 7, 19, 98, 197, 194, 179, 193, 212, 150, 22, 194, 73, 183, 163, 0,
+        10,
+      ],
+      Payload: {
+        Name: 'modemRegistration',
+        SIN: 0,
+        MIN: 0,
+        Fields: [
+          {
+            Name: 'hardwareMajorVersion',
+            Value: '5',
+          },
+          {
+            Name: 'hardwareMinorVersion',
+            Value: '0',
+          },
+          {
+            Name: 'softwareMajorVersion',
+            Value: '3',
+          },
+          {
+            Name: 'softwareMinorVersion',
+            Value: '3',
+          },
+          {
+            Name: 'product',
+            Value: '6',
+          },
+          {
+            Name: 'wakeupPeriod',
+            Value: 'None',
+          },
+          {
+            Name: 'lastResetReason',
+            Value: 'NewVirtualCarrier',
+          },
+          {
+            Name: 'virtualCarrier',
+            Value: '501',
+          },
+          {
+            Name: 'beam',
+            Value: '1',
+          },
+          {
+            Name: 'vain',
+            Value: '0',
+          },
+          {
+            Name: 'reserved',
+            Value: '0',
+          },
+          {
+            Name: 'operatorTxState',
+            Value: '0',
+          },
+          {
+            Name: 'userTxState',
+            Value: '0',
+          },
+          {
+            Name: 'broadcastIDCount',
+            Value: '0',
+          },
+        ],
+      },
+      RegionName: 'AORWSC',
+      OTAMessageSize: 17,
+      CustomerID: 0,
+      Transport: 1,
+      MobileOwnerID: 60002657,
+    },
+  ],
+};
+
+const mockDownloadMessage2Return = {
+  ErrorID: 0,
+  NextStartUTC: '2022-07-06 19:25:33',
+  Messages: [
+    {
+      ID: 11326754042,
+      MessageUTC: '2022-07-06 17:13:52',
+      ReceiveUTC: '2022-07-06 17:13:52',
+      SIN: 130,
+      MobileID: '01597865SKYFA8A',
+      RawPayload: [
+        130, 7, 19, 98, 197, 194, 179, 193, 212, 150, 22, 194, 73, 183, 163, 0,
+        10,
+      ],
+      Payload: {
+        Name: 'modemRegistration',
+        SIN: 0,
+        MIN: 0,
+        Fields: [
+          {
+            Name: 'hardwareMajorVersion',
+            Value: '5',
+          },
+          {
+            Name: 'hardwareMinorVersion',
+            Value: '0',
+          },
+          {
+            Name: 'softwareMajorVersion',
+            Value: '3',
+          },
+          {
+            Name: 'softwareMinorVersion',
+            Value: '3',
+          },
+          {
+            Name: 'product',
+            Value: '6',
+          },
+          {
+            Name: 'wakeupPeriod',
+            Value: 'None',
+          },
+          {
+            Name: 'lastResetReason',
+            Value: 'NewVirtualCarrier',
+          },
+          {
+            Name: 'virtualCarrier',
+            Value: '501',
+          },
+          {
+            Name: 'beam',
+            Value: '1',
+          },
+          {
+            Name: 'vain',
+            Value: '0',
+          },
+          {
+            Name: 'reserved',
+            Value: '0',
+          },
+          {
+            Name: 'operatorTxState',
+            Value: '0',
+          },
+          {
+            Name: 'userTxState',
+            Value: '0',
+          },
+          {
+            Name: 'broadcastIDCount',
+            Value: '0',
+          },
+        ],
+      },
+      RegionName: 'AORWSC',
+      OTAMessageSize: 17,
+      CustomerID: 0,
+      Transport: 1,
+      MobileOwnerID: 60002657,
+    },
+    {
+      ID: 11326754042,
+      MessageUTC: '2022-07-06 17:13:52',
+      ReceiveUTC: '2022-07-06 17:13:52',
+      SIN: 130,
+      MobileID: '01597865SKYFA8A',
+      RawPayload: [
+        130, 7, 19, 98, 197, 194, 179, 193, 212, 150, 22, 194, 73, 183, 163, 0,
+        10,
+      ],
+      Payload: {
+        Name: 'modemRegistration',
+        SIN: 0,
+        MIN: 0,
+        Fields: [
+          {
+            Name: 'hardwareMajorVersion',
+            Value: '5',
+          },
+          {
+            Name: 'hardwareMinorVersion',
+            Value: '0',
+          },
+          {
+            Name: 'softwareMajorVersion',
+            Value: '3',
+          },
+          {
+            Name: 'softwareMinorVersion',
+            Value: '3',
+          },
+          {
+            Name: 'product',
+            Value: '6',
+          },
+          {
+            Name: 'wakeupPeriod',
+            Value: 'None',
+          },
+          {
+            Name: 'lastResetReason',
+            Value: 'NewVirtualCarrier',
+          },
+          {
+            Name: 'virtualCarrier',
+            Value: '501',
+          },
+          {
+            Name: 'beam',
+            Value: '1',
+          },
+          {
+            Name: 'vain',
+            Value: '0',
+          },
+          {
+            Name: 'reserved',
+            Value: '0',
+          },
+          {
+            Name: 'operatorTxState',
+            Value: '0',
+          },
+          {
+            Name: 'userTxState',
+            Value: '0',
+          },
+          {
+            Name: 'broadcastIDCount',
+            Value: '0',
+          },
+        ],
+      },
+      RegionName: 'AORWSC',
+      OTAMessageSize: 17,
+      CustomerID: 0,
+      Transport: 1,
+      MobileOwnerID: 60002657,
+    },
+  ],
+};
+
+const mockOrbcommVersionDeviceResolved = {
+  id: 25,
+  deviceId: 'any_device_id',
+  name: 'any_name_payload',
+  SIN: 0,
+  MIN: 0,
+  fields: [
+    { Name: 'userTxState', Value: '0' },
+    { Name: 'broadcastIDCount', Value: '0' },
+  ],
+};
+
 describe('OrbcommService', () => {
   let service: OrbcommService;
   let prisma: PrismaService;
@@ -62,6 +325,11 @@ describe('OrbcommService', () => {
             orbcommNextMessage: {
               findFirst: jest.fn().mockResolvedValue(mockNextMessageReturn),
               create: jest.fn().mockResolvedValue(mockNextMessageCreated),
+            },
+            orbcommVersionDevice: {
+              upsert: jest
+                .fn()
+                .mockResolvedValue(mockOrbcommVersionDeviceResolved),
             },
           },
         },
@@ -154,28 +422,7 @@ describe('OrbcommService', () => {
           mockBodyToGetMessage,
           http,
         );
-        expect(apiResponse).toEqual({
-          ErrorID: 0,
-          NextStartUTC: '2022-07-06 19:25:33',
-          Messages: [
-            {
-              ID: 11326754042,
-              MessageUTC: '2022-07-06 17:13:52',
-              ReceiveUTC: '2022-07-06 17:13:52',
-              SIN: 130,
-              MobileID: '01597865SKYFA8A',
-              RawPayload: [
-                130, 7, 19, 98, 197, 194, 179, 193, 212, 150, 22, 194, 73, 183,
-                163, 0, 10,
-              ],
-              RegionName: 'AORWSC',
-              OTAMessageSize: 17,
-              CustomerID: 0,
-              Transport: 1,
-              MobileOwnerID: 60002657,
-            },
-          ],
-        });
+        expect(apiResponse).toEqual(mockDownloadMessageReturn);
       });
       it('should call get when orbcommApiDownload is call', () => {
         const spyHttp = jest.spyOn(http.axiosRef, 'get');
@@ -251,6 +498,7 @@ describe('OrbcommService', () => {
 
       const previousMessage = 'any_previousMessage';
       const nextMessage = 'any_nextMessage';
+
       it('should call orbcommNextMessage.create with corrects params', async () => {
         jest
           .spyOn(prisma.orbcommNextMessage, 'create')
@@ -274,15 +522,66 @@ describe('OrbcommService', () => {
           functions.createNextUtc(previousMessage, nextMessage, prisma),
         ).toEqual(mockNextMessageCreated);
       });
-      it('should return a empty array if no messages.payload is provide', async () => {
-        //TODO
+      it('should throw a error if prisma throws', async () => {
         jest
           .spyOn(prisma.orbcommNextMessage, 'create')
-          .mockImplementation(mockPrismaCreateNextMessage);
+          .mockRejectedValueOnce(new Error('Prisma Error'));
 
-        expect(
+        expect(() =>
           functions.createNextUtc(previousMessage, nextMessage, prisma),
-        ).toEqual(mockNextMessageCreated);
+        ).rejects.toThrowError('Prisma Error');
+      });
+    });
+    describe('upsertVersionMobile', () => {
+      it('should call orbcommVersionDevice.upsert when upsertVersionMobile is call', async () => {
+        const spyUpsert = jest.spyOn(prisma.orbcommVersionDevice, 'upsert');
+
+        upsertVersionMobile(mockDownloadMessageReturn, prisma);
+
+        expect(spyUpsert).toBeCalledTimes(1);
+      });
+      it('should call orbcommVersionDevice.upsert 2 times when 2 payloadObjects is provide ', async () => {
+        const spyUpsert = jest.spyOn(prisma.orbcommVersionDevice, 'upsert');
+
+        upsertVersionMobile(mockDownloadMessage2Return, prisma);
+
+        expect(spyUpsert).toBeCalledTimes(2);
+      });
+      it('should not call orbcommVersionDevice.upsert if no payloadObjects is provide ', async () => {
+        const spyUpsert = jest.spyOn(prisma.orbcommVersionDevice, 'upsert');
+
+        upsertVersionMobile(mockDownloadWithoutPayload, prisma);
+
+        expect(spyUpsert).toBeCalledTimes(0);
+      });
+      it('should return a empty array if no payloadObjects is provide', async () => {
+        const result = upsertVersionMobile(mockDownloadWithoutPayload, prisma);
+
+        expect(result).toEqual([]);
+      });
+      it('should call prisma.orbcommNextMessage.findFirst with correct params', async () => {
+        const mockResult = jest
+          .spyOn(prisma.orbcommVersionDevice, 'upsert')
+          .mockResolvedValue(mockOrbcommVersionDeviceResolved);
+
+        upsertVersionMobile(mockDownloadMessageReturn, prisma);
+
+        expect(mockResult).toBeCalledWith({
+          create: {
+            deviceId: mockDownloadMessageReturn.Messages[0].MobileID,
+            SIN: mockDownloadMessageReturn.Messages[0].Payload.SIN,
+            MIN: mockDownloadMessageReturn.Messages[0].Payload.MIN,
+            name: mockDownloadMessageReturn.Messages[0].Payload.Name,
+            fields: mockDownloadMessageReturn.Messages[0].Payload.Fields,
+          },
+          where: { deviceId: mockDownloadMessageReturn.Messages[0].MobileID },
+          update: {
+            SIN: mockDownloadMessageReturn.Messages[0].Payload.SIN,
+            MIN: mockDownloadMessageReturn.Messages[0].Payload.MIN,
+            name: mockDownloadMessageReturn.Messages[0].Payload.Name,
+            fields: mockDownloadMessageReturn.Messages[0].Payload.Fields,
+          },
+        });
       });
     });
   });

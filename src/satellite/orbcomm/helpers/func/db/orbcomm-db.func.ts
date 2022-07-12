@@ -132,19 +132,22 @@ export function createNextUtc(
   nextMessage: string,
   prisma: PrismaService,
 ) {
-  return prisma.orbcommNextMessage.create({
-    data: {
-      previousMessage,
-      nextMessage,
-    },
-  });
+  try {
+    return prisma.orbcommNextMessage.create({
+      data: {
+        previousMessage,
+        nextMessage,
+      },
+    });
+  } catch (error) {
+    throw new Error(error.message);
+  }
 }
 export function upsertVersionMobile(
   downloadMessages: ReceiveDownloadData,
   prisma: PrismaService,
 ) {
   const messagesWithPayload = filterPayload(downloadMessages);
-  if (!messagesWithPayload) return;
 
   const payloadPromiseList = [];
 
@@ -158,7 +161,6 @@ export function upsertVersionMobile(
         fields: message.Payload.Fields,
       },
       where: { deviceId: message.MobileID },
-
       update: {
         SIN: message.Payload.SIN,
         MIN: message.Payload.MIN,
