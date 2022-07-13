@@ -26,6 +26,7 @@ import {
   filterPayload,
   upsertVersionMobile,
   createGetMessages,
+  processPrisma,
 } from './helpers/index';
 
 @Injectable()
@@ -69,7 +70,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES PROCESS....');
 
@@ -80,14 +81,10 @@ export class OrbcommService {
     const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
     const getMessages = createGetMessages(downloadMessages, this.prisma)
 
-    console.log(getMessages)
-    
- 
-  //  const result = await this.prisma.$transaction(getMessages);
+    await processPrisma(nextMessage, ...versionMobile, ...getMessages)(this.prisma)
 
-   
-   //TODO metodo para separar caso o retorno do prisma seja vazio -> sugestão if !x.length pula...
-  
+   // processPrisma pode retornar os elementos criados
+   //TODO para funcionamento atualizar os links 
   }
 
   // @Cron(CronExpression.EVERY_30_SECONDS)

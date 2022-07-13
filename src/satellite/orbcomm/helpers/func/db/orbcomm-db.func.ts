@@ -19,6 +19,7 @@ import {
   ReceiveDownloadMessageData,
   Submission,
   Terminals,
+  validatePrismaPromise,
 } from '../../index';
 
 export function saveAndUpdateMessages(
@@ -174,7 +175,9 @@ export async function findNextMessage(prisma: PrismaService): Promise<string> {
     take: 1,
   });
   if (!lastMessage) {
-    throw new NotFoundException('NextMessage not found!');
+    throw new NotFoundException(
+      'NextMessage not found in table, verify your "orbcommNextMessage" table',
+    );
   }
   return lastMessage.nextMessage;
 }
@@ -237,4 +240,14 @@ export function createGetMessages(
       data: message,
     });
   });
+}
+
+export function processPrisma(...args: any[]) {
+  const validPrismaPromise = validatePrismaPromise(args);
+  return async function (prisma: PrismaService) {
+    if (!validPrismaPromise.length) {
+      throw new Error('processPrisma() receive no data to persist');
+    }
+    return await prisma.$transaction(validPrismaPromise);
+  };
 }

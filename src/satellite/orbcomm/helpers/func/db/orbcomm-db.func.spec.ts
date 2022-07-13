@@ -342,6 +342,13 @@ describe('Orbcomm-db-func', () => {
             orbcommGetMessage: {
               create: jest.fn().mockResolvedValue(mockGetMessageResolved),
             },
+            $transaction: jest
+              .fn()
+              .mockResolvedValue([
+                mockGetMessageResolved,
+                mockOrbcommVersionDeviceResolved,
+                mockNextMessageCreated,
+              ]),
           },
         },
         {
@@ -541,6 +548,51 @@ describe('Orbcomm-db-func', () => {
         );
 
         expect(result[0]).resolves.toEqual(mockGetMessageResolved);
+      });
+    });
+    describe('processPrisma', () => {
+      it('should call prisma.transaction when processPrisma is call', () => {
+        const spyTransaction = jest
+          .spyOn(prisma, '$transaction')
+          .mockResolvedValue([
+            mockGetMessageResolved,
+            mockOrbcommVersionDeviceResolved,
+            mockNextMessageCreated,
+          ]);
+
+        functions.processPrisma(mockNextMessageReturn)(prisma);
+
+        expect(spyTransaction).toBeCalledTimes(1);
+      });
+      it('should return correct value when processPrisma is resolved', () => {
+        jest
+          .spyOn(prisma, '$transaction')
+          .mockResolvedValue([
+            mockGetMessageResolved,
+            mockOrbcommVersionDeviceResolved,
+            mockNextMessageCreated,
+          ]);
+
+        const result = functions.processPrisma(mockNextMessageReturn)(prisma);
+
+        expect(result).resolves.toEqual([
+          mockGetMessageResolved,
+          mockOrbcommVersionDeviceResolved,
+          mockNextMessageCreated,
+        ]);
+      });
+      it('should processPrisma if no data is provide', () => {
+        jest
+          .spyOn(prisma, '$transaction')
+          .mockResolvedValue([
+            mockGetMessageResolved,
+            mockOrbcommVersionDeviceResolved,
+            mockNextMessageCreated,
+          ]);
+
+        expect(
+          functions.processPrisma([], [], [])(prisma),
+        ).rejects.toThrowError('processPrisma() receive no data to persist');
       });
     });
   });

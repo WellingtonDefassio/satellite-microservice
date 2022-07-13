@@ -55,3 +55,7 @@ export function validateDownloadData(
     throw new Error(`Error id ${body.ErrorID} check the api error!`);
   else return body;
 }
+
+export function validatePrismaPromise(args: any[]) {
+  return args.filter((value) => !Array.isArray(value));
+}

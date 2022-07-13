@@ -85,6 +85,7 @@ const mockDownloadMessageReturn = {
     },
   ],
 };
+
 const mockDownloadWithoutPayload = {
   ErrorID: 0,
   NextStartUTC: '2022-07-06 19:25:33',
@@ -143,6 +144,45 @@ describe('Orbcomm-format-func', () => {
         const result = functions.filterPayload(mockDownloadWithoutPayload);
 
         expect(result).toEqual([]);
+      });
+    });
+    describe('formatGetMessages', () => {
+      it('should return a formatted downloadMessage', () => {
+        const result = functions.formatGetMessages(mockDownloadMessageReturn);
+
+        expect(result).toEqual([
+          {
+            MIN: 7,
+            SIN: 130,
+            costumerID: 0,
+            deviceId: '01597865SKYFA8A',
+            messageId: '11326754042',
+            messageUTC: new Date('2022-07-06 17:13:52'),
+            mobileOwnerID: '60002657',
+            otaMessageSize: 17,
+            payload:
+              '130,7,19,98,197,194,179,193,212,150,22,194,73,183,163,0,10',
+            receiveUTC: new Date('2022-07-06 17:13:52'),
+            regionName: 'AORWSC',
+            transport: 1,
+          },
+        ]);
+      });
+      it('should return a formatted with corrects params', () => {
+        const result = functions.formatGetMessages(mockDownloadMessageReturn);
+
+        expect(result[0]).toHaveProperty('messageId');
+        expect(result[0]).toHaveProperty('messageUTC');
+        expect(result[0]).toHaveProperty('receiveUTC');
+        expect(result[0]).toHaveProperty('deviceId');
+        expect(result[0]).toHaveProperty('SIN');
+        expect(result[0]).toHaveProperty('MIN');
+        expect(result[0]).toHaveProperty('payload');
+        expect(result[0]).toHaveProperty('regionName');
+        expect(result[0]).toHaveProperty('otaMessageSize');
+        expect(result[0]).toHaveProperty('costumerID');
+        expect(result[0]).toHaveProperty('transport');
+        expect(result[0]).toHaveProperty('mobileOwnerID');
       });
     });
   });
