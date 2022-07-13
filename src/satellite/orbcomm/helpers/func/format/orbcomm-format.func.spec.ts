@@ -114,7 +114,7 @@ describe('Orbcomm-format-func', () => {
     jest.clearAllMocks();
   });
   describe('downloadMessages', () => {
-    describe('formatParamsToGetMessages', () => {
+    describe('formatParamsToGetMessages()', () => {
       it('should return a correct start_utc', () => {
         const formattedParams = functions.formatParamsToGetMessages('10-10-10');
 
@@ -134,7 +134,7 @@ describe('Orbcomm-format-func', () => {
         }).toThrowError('Missing ParamsToGetMessages!!');
       });
     });
-    describe('filterPayload', () => {
+    describe('filterPayload()', () => {
       it('should return a message array if payload attribute exists', () => {
         const result = functions.filterPayload(mockDownloadMessageReturn);
 
@@ -146,7 +146,7 @@ describe('Orbcomm-format-func', () => {
         expect(result).toEqual([]);
       });
     });
-    describe('formatGetMessages', () => {
+    describe('formatGetMessages()', () => {
       it('should return a formatted downloadMessage', () => {
         const result = functions.formatGetMessages(mockDownloadMessageReturn);
 

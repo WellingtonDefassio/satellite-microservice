@@ -47,6 +47,11 @@ export const verifyPostMessages = (sendedData, responseData): Submission[] => {
 
 //TESTED
 
+/**
+ * @param {[ReceiveDownloadData]} body [return of api Orbcomm]
+ * @returns {[ReceiveDownloadData]} [return the same data of param if validate data pass, else return a error]
+ */
+
 export function validateDownloadData(
   body: ReceiveDownloadData,
 ): ReceiveDownloadData {
@@ -56,6 +61,11 @@ export function validateDownloadData(
   else return body;
 }
 
-export function validatePrismaPromise(args: any[]) {
+/**
+ * @param {any[]} args [receive the return of prisma operation to persist in a prisma.$transaction]
+ * @returns {[array]} [if some operation return a empty array this is will be filter of the return]
+ */
+
+export function validatePrismaPromise(args: any[]): any[] {
   return args.filter((value) => !Array.isArray(value));
 }

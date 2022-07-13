@@ -70,7 +70,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES PROCESS....');
 

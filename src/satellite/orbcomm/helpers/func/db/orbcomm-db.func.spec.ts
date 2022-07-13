@@ -375,7 +375,7 @@ describe('Orbcomm-db-func', () => {
     );
   });
   describe('downloadMessages', () => {
-    describe('findNextMessage', () => {
+    describe('findNextMessage()', () => {
       const mockPrismaFindNextMessage = jest
         .fn()
         .mockReturnValue(mockNextMessageReturn);
@@ -417,7 +417,7 @@ describe('Orbcomm-db-func', () => {
       });
     });
 
-    describe('createNextUtc', () => {
+    describe('createNextUtc()', () => {
       const mockPrismaCreateNextMessage = jest
         .fn()
         .mockReturnValue(mockNextMessageCreated);
@@ -458,7 +458,7 @@ describe('Orbcomm-db-func', () => {
         ).rejects.toThrowError('Prisma Error');
       });
     });
-    describe('upsertVersionMobile', () => {
+    describe('upsertVersionMobile()', () => {
       it('should call orbcommVersionDevice.upsert when upsertVersionMobile is call', async () => {
         const spyUpsert = jest.spyOn(prisma.orbcommVersionDevice, 'upsert');
 
@@ -513,7 +513,7 @@ describe('Orbcomm-db-func', () => {
         });
       });
     });
-    describe('createGetMessages', () => {
+    describe('createGetMessages()', () => {
       it('should call orbcommGetMessage.create when createGetMessages is call', async () => {
         const spyCreate = jest.spyOn(prisma.orbcommGetMessage, 'create');
 
@@ -550,7 +550,7 @@ describe('Orbcomm-db-func', () => {
         expect(result[0]).resolves.toEqual(mockGetMessageResolved);
       });
     });
-    describe('processPrisma', () => {
+    describe('processPrisma()', () => {
       it('should call prisma.transaction when processPrisma is call', () => {
         const spyTransaction = jest
           .spyOn(prisma, '$transaction')

@@ -118,8 +118,8 @@ describe('Orbcomm-validators', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
   });
-  describe('downloadMessages()', () => {
-    describe('validateDownloadData', () => {
+  describe('downloadMessages', () => {
+    describe('validateDownloadData()', () => {
       it('should the same input body if not throws', () => {
         const correctBody = functions.validateDownloadData(
           mockDownloadMessageReturn,

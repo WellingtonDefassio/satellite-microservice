@@ -131,7 +131,7 @@ describe('OrbcommService', () => {
     );
   });
   describe('downloadMessages', () => {
-    describe('orbcommApiDownloadMessages', () => {
+    describe('orbcommApiDownloadMessages()', () => {
       it('should return get with correct data', async () => {
         const apiResponse = await functions.orbcommApiDownloadMessages(
           mockBodyToGetMessage,
