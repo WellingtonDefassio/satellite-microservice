@@ -72,7 +72,7 @@ export class OrbcommService {
 
   // @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
-    console.log('DOWNLOAD MESSAGES PROCESS....');
+    // console.log('DOWNLOAD MESSAGES PROCESS....');
 
     const bodyToPost = await findNextMessage(this.prisma).then(formatParamsToGetMessages);
     const downloadMessages = await orbcommApiDownloadMessages(bodyToPost, this.http).then(validateDownloadData);

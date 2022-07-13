@@ -55,10 +55,10 @@ export function formatParamsToGetMessages(
       access_id: 70002657,
       password: 'ZFLLYNJL',
       include_raw_payload: true,
-      start_utc: nextMessage,
+      start_utc: nextMessage.trim(),
     };
     Object.values(messageBodyToGet).forEach((value) => {
-      if (!!value === false) {
+      if (!!value == false) {
         throw Error('Missing ParamsToGetMessages!!');
       }
     });

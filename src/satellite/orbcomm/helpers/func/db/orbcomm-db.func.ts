@@ -216,7 +216,7 @@ export function createNextUtc(
   previousMessage: string,
   nextMessage: string,
   prisma: PrismaService,
-) {
+): any {
   try {
     return prisma.orbcommNextMessage.create({
       data: {
@@ -232,7 +232,7 @@ export function createNextUtc(
 export function createGetMessages(
   downloadMessages: ReceiveDownloadData,
   prisma: PrismaService,
-) {
+): any[] {
   const formattedMessages = formatGetMessages(downloadMessages);
 
   return formattedMessages.map((message) => {
@@ -248,6 +248,10 @@ export function processPrisma(...args: any[]) {
     if (!validPrismaPromise.length) {
       throw new Error('processPrisma() receive no data to persist');
     }
-    return await prisma.$transaction(validPrismaPromise);
+    try {
+      return await prisma.$transaction(validPrismaPromise);
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
 }
