@@ -65,11 +65,12 @@ export function validatePrismaPromise(args: any[]): any[] {
 /**
  *
  * @param {string} nameServiceTest [ the name of the operation on which the return is being tested ]
- * @param { any[] } args [ the returned content being tested ]
  * @returns [ if the tested content is an empty array it will return an error with the given name, otherwise it will return the given content ]
  */
 
-export function arrayExistsValidate(nameServiceTest: string) {
+export function arrayExistsValidate(
+  nameServiceTest: string,
+): (args: any[]) => any[] {
   return function (args: any[]) {
     if (!args.length) {
       throw new Error(`${nameServiceTest} no more data to processing`);

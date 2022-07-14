@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import {
+  ApiMethods,
   BodyToGetMessage,
   DeviceApi,
   DownloadResponse,
@@ -7,6 +8,7 @@ import {
   MessageBodyGetStatus,
   MessageBodyPost,
   ReceiveDownloadData,
+  SendedType,
   Submission,
   verifyPostMessages,
 } from '../../index';
@@ -20,30 +22,6 @@ export const orbcommApiGetStatus = (
       .get('http://localhost:3001/orbcomm/getfwd', { params: body })
       .then((apiResponse) => {
         resolve(apiResponse.data);
-      })
-      .catch((error) => {
-        reject(error.message);
-      });
-  });
-};
-
-export const orbcommApiPostMessages = (
-  body: MessageBodyPost,
-  http: HttpService,
-) => {
-  return new Promise<Submission[]>((resolve, reject) => {
-    http.axiosRef
-      .post('http://localhost:3001/orbcomm/post', {
-        body,
-      })
-      .then((apiResponse) => {
-        console.log(apiResponse.data);
-        const correctValues = verifyPostMessages(
-          body.messages,
-          apiResponse.data,
-        );
-        console.log(correctValues);
-        resolve(correctValues);
       })
       .catch((error) => {
         reject(error.message);
@@ -75,6 +53,28 @@ export async function orbcommApiDownloadMessages(
         params: body,
       })
       .then((apiData) => apiData.data)
+      .catch((err) => {
+        throw new Error(err.message);
+      });
+  } catch (error) {
+    throw Error(error.message);
+  }
+}
+
+export async function apiRequest(
+  link: string,
+  method: ApiMethods,
+  sendedType: SendedType,
+  dataToSend: any,
+  http: HttpService,
+) {
+  try {
+    return await http.axiosRef[method](link, {
+      [sendedType]: dataToSend,
+    })
+      .then((apiResponse) => {
+        return apiResponse.data;
+      })
       .catch((err) => {
         throw new Error(err.message);
       });

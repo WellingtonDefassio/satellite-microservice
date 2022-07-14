@@ -78,21 +78,19 @@ export function formatGetMessages(downloadMessages: ReceiveDownloadData) {
 }
 
 /**
- * @param  credentials [ credentials to access api ]
- * @param {[ SendMessages[] ]} messages [ all messages who need to be send to a orbcommAPI ]
- * @returns {[ MessageBodyPost ]} [ the structure that orbcomm api require to post ]
+ * @param credentials
+ * @returns {( (messages: SendMessages[]) => MessageBodyPost )} [ returns a function that receives the messages and returns a MessageBodyToPost ]
  */
 
 export function formatMessagesToPostOrbcomm(credentials: {
   access_id: string;
   password: string;
-}) {
+}): (messages: SendMessages[]) => MessageBodyPost {
   const messageBodyPost: MessageBodyPost = {
     access_id: credentials.access_id,
     password: credentials.password,
     messages: [],
   };
-
   return function (messages: SendMessages[]): MessageBodyPost {
     messages.forEach((message) =>
       messageBodyPost.messages.push({

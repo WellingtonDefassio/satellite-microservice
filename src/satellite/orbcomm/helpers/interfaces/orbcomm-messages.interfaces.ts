@@ -121,3 +121,13 @@ interface MessageStatus {
   failed?: string;
   cancelled?: string;
 }
+
+export enum ApiMethods {
+  GET = 'get',
+  POST = 'post',
+}
+
+export enum SendedType {
+  PARAM = 'params',
+  BODY = 'body',
+}

@@ -200,12 +200,39 @@ describe('Orbcomm-format-func', () => {
   });
   describe('uploadMessage', () => {
     describe('formatMessagesToPostOrbcomm()', () => {
-      it('should return a correct body', () => {
-        const result = functions.formatMessagesToPostOrbcomm(
+      const mockCredentials = {
+        access_id: 'mock_access',
+        password: 'mock_password',
+      };
+
+      it('should return a body with property', () => {
+        const result = functions.formatMessagesToPostOrbcomm(mockCredentials)(
           mockSendMessagesFindMany,
         );
-
-        expect(result).toEqual('?');
+        expect(result.messages[0]).toHaveProperty('RawPayload');
+        expect(result.messages[0]).toHaveProperty('DestinationID');
+        expect(result.messages[0]).toHaveProperty('UserMessageID');
+      });
+      it('should return a property with correct value', () => {
+        const result = functions.formatMessagesToPostOrbcomm(mockCredentials)(
+          mockSendMessagesFindMany,
+        );
+        expect(result.messages[0].UserMessageID).toEqual(
+          mockSendMessagesFindMany[0].id,
+        );
+        expect(result.messages[0].DestinationID).toEqual(
+          mockSendMessagesFindMany[0].deviceId,
+        );
+        expect(result.messages[0].RawPayload).toEqual(
+          Buffer.from(mockSendMessagesFindMany[0].payload).toJSON().data,
+        );
+      });
+      it('should return correct credentials', () => {
+        const result = functions.formatMessagesToPostOrbcomm(mockCredentials)(
+          mockSendMessagesFindMany,
+        );
+        expect(result.access_id).toEqual(mockCredentials.access_id);
+        expect(result.password).toEqual(mockCredentials.password);
       });
     });
   });
