@@ -107,3 +107,17 @@ export enum OrbcommStatusMap {
   INVALID = 7,
   TRANSMITTED = 8,
 }
+
+export interface BasicOrbcomm {
+  gateway: string;
+  status: MessageStatus;
+}
+
+interface MessageStatus {
+  created?: string;
+  submitted?: string;
+  sended?: string;
+  timeout?: string;
+  failed?: string;
+  cancelled?: string;
+}

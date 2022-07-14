@@ -7,22 +7,6 @@ import {
   ReceiveDownloadMessageData,
 } from '../../index';
 
-export function formatMessageToPost(messages: SendMessages[]): MessageBodyPost {
-  const messageBodyPost: MessageBodyPost = {
-    access_id: 'any_access',
-    password: 'any_password',
-    messages: [],
-  };
-  messages.forEach((message) =>
-    messageBodyPost.messages.push({
-      DestinationID: message.deviceId,
-      UserMessageID: message.id,
-      RawPayload: Buffer.from(message.payload).toJSON().data,
-    }),
-  );
-  return messageBodyPost;
-}
-
 export function createListOfFwdIds(messagesToCheck: SendMessagesOrbcomm[]) {
   const listOfFwIds = [];
 
@@ -91,4 +75,32 @@ export function formatGetMessages(downloadMessages: ReceiveDownloadData) {
       mobileOwnerID: message.MobileOwnerID.toString(),
     };
   });
+}
+
+/**
+ * @param  credentials [ credentials to access api ]
+ * @param {[ SendMessages[] ]} messages [ all messages who need to be send to a orbcommAPI ]
+ * @returns {[ MessageBodyPost ]} [ the structure that orbcomm api require to post ]
+ */
+
+export function formatMessagesToPostOrbcomm(credentials: {
+  access_id: string;
+  password: string;
+}) {
+  const messageBodyPost: MessageBodyPost = {
+    access_id: credentials.access_id,
+    password: credentials.password,
+    messages: [],
+  };
+
+  return function (messages: SendMessages[]): MessageBodyPost {
+    messages.forEach((message) =>
+      messageBodyPost.messages.push({
+        DestinationID: message.deviceId,
+        UserMessageID: message.id,
+        RawPayload: Buffer.from(message.payload).toJSON().data,
+      }),
+    );
+    return messageBodyPost;
+  };
 }

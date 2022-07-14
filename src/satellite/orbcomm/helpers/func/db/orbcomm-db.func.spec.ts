@@ -4,6 +4,7 @@ import { PrismaService } from '../../../../../prisma/prisma.service';
 import * as functions from '../../index';
 import { OrbcommService } from '../../../orbcomm.service';
 import { NotFoundException } from '@nestjs/common';
+import { MessageStatus } from '@prisma/client';
 
 const mockNextMessageReturn = {
   nextMessage: '2021-10-09 00:14:55',
@@ -317,6 +318,17 @@ const mockGetMessageResolved = {
   transport: 1,
   mobileOwnerID: '60002657',
 };
+
+const mockSendMessagesFindMany = [
+  {
+    id: 1,
+    payload: 'any_payload',
+    deviceId: 'any_device',
+    status: MessageStatus.CREATED,
+    createdAt: new Date('2022-07-01 13:00:00'),
+    updatedAt: new Date('2022-07-01 13:00:00'),
+  },
+];
 describe('Orbcomm-db-func', () => {
   let service: OrbcommService;
   let prisma: PrismaService;
@@ -341,6 +353,9 @@ describe('Orbcomm-db-func', () => {
             },
             orbcommGetMessage: {
               create: jest.fn().mockResolvedValue(mockGetMessageResolved),
+            },
+            sendMessages: {
+              findMany: jest.fn().mockResolvedValue(mockSendMessagesFindMany),
             },
             $transaction: jest
               .fn()
@@ -593,6 +608,49 @@ describe('Orbcomm-db-func', () => {
         expect(
           functions.processPrisma([], [], [])(prisma),
         ).rejects.toThrowError('processPrisma() receive no data to persist');
+      });
+    });
+  });
+  describe('uploadMessage', () => {
+    describe('findCreatedMessages()', () => {
+      it('should call sendMessages.findMany when findCreatedMessages is call', () => {
+        const spyFindMany = jest
+          .spyOn(prisma.sendMessages, 'findMany')
+          .mockResolvedValue(mockSendMessagesFindMany);
+
+        functions.findCreatedMessages('ORBCOMM_V2', prisma);
+
+        expect(spyFindMany).toBeCalledTimes(1);
+      });
+      it('should call sendMessages.findMany with correct params', () => {
+        const spyFindMany = jest
+          .spyOn(prisma.sendMessages, 'findMany')
+          .mockResolvedValue(mockSendMessagesFindMany);
+
+        functions.findCreatedMessages('ORBCOMM_V2', prisma);
+
+        expect(spyFindMany).toHaveBeenCalledWith({
+          where: {
+            AND: [
+              { status: { equals: 'CREATED' } },
+              {
+                device: {
+                  satelliteGateway: { name: { equals: 'ORBCOMM_V2' } },
+                },
+              },
+            ],
+          },
+          take: 50,
+        });
+      });
+      it('should call sendMessages.findMany resolves to correct value', () => {
+        jest
+          .spyOn(prisma.sendMessages, 'findMany')
+          .mockResolvedValue(mockSendMessagesFindMany);
+
+        expect(
+          functions.findCreatedMessages('ORBCOMM_V2', prisma),
+        ).resolves.toEqual(mockSendMessagesFindMany);
       });
     });
   });

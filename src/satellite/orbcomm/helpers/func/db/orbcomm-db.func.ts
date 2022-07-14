@@ -84,23 +84,6 @@ export function updateFwdMessages(
   prisma.$transaction(listUpdate);
 }
 
-export function findMessagesByStatus(prisma: PrismaService) {
-  const messagesWithStatusCreated = prisma.sendMessages.findMany({
-    where: {
-      AND: [
-        { status: { equals: 'CREATED' } },
-        {
-          device: {
-            satelliteGateway: { name: { equals: 'ORBCOMM_V2' } },
-          },
-        },
-      ],
-    },
-    take: 50,
-  });
-  return messagesWithStatusCreated;
-}
-
 export function findMessagesByOrbcommStatus(
   prisma: PrismaService,
 ): Promise<SendMessagesOrbcomm[]> {
@@ -185,13 +168,11 @@ export async function findNextMessage(prisma: PrismaService): Promise<string> {
 export function upsertVersionMobile(
   downloadMessages: ReceiveDownloadData,
   prisma: PrismaService,
-) {
+): any[] {
   const messagesWithPayload = filterPayload(downloadMessages);
 
-  const payloadPromiseList = [];
-
-  messagesWithPayload.forEach((message) => {
-    const payloadPromise = prisma.orbcommVersionDevice.upsert({
+  return messagesWithPayload.map((message) => {
+    return prisma.orbcommVersionDevice.upsert({
       create: {
         deviceId: message.MobileID,
         SIN: message.Payload.SIN,
@@ -207,9 +188,7 @@ export function upsertVersionMobile(
         fields: message.Payload.Fields,
       },
     });
-    payloadPromiseList.push(payloadPromise);
   });
-  return payloadPromiseList;
 }
 
 export function createNextUtc(
@@ -254,4 +233,30 @@ export function processPrisma(...args: any[]) {
       throw new Error(error.message);
     }
   };
+}
+
+/**
+ *
+ * @param gateway [ provide which gateway the function should return messages from ]
+ * @param prisma [ provide the prism instance ]
+ * @returns [ returns all messages with the status created ]
+ */
+
+export async function findCreatedMessages(
+  gateway: string,
+  prisma: PrismaService,
+) {
+  return await prisma.sendMessages.findMany({
+    where: {
+      AND: [
+        { status: { equals: 'CREATED' } },
+        {
+          device: {
+            satelliteGateway: { name: { equals: gateway } },
+          },
+        },
+      ],
+    },
+    take: 50,
+  });
 }

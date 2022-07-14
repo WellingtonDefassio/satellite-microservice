@@ -1,3 +1,4 @@
+import { MessageStatus } from '@prisma/client';
 import * as functions from '../../index';
 
 const mockDownloadMessageReturn = {
@@ -109,6 +110,17 @@ const mockDownloadWithoutPayload = {
   ],
 };
 
+const mockSendMessagesFindMany = [
+  {
+    id: 1,
+    payload: 'any_payload',
+    deviceId: 'any_device',
+    status: MessageStatus.CREATED,
+    createdAt: new Date('2022-07-01 13:00:00'),
+    updatedAt: new Date('2022-07-01 13:00:00'),
+  },
+];
+
 describe('Orbcomm-format-func', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -183,6 +195,17 @@ describe('Orbcomm-format-func', () => {
         expect(result[0]).toHaveProperty('costumerID');
         expect(result[0]).toHaveProperty('transport');
         expect(result[0]).toHaveProperty('mobileOwnerID');
+      });
+    });
+  });
+  describe('uploadMessage', () => {
+    describe('formatMessagesToPostOrbcomm()', () => {
+      it('should return a correct body', () => {
+        const result = functions.formatMessagesToPostOrbcomm(
+          mockSendMessagesFindMany,
+        );
+
+        expect(result).toEqual('?');
       });
     });
   });

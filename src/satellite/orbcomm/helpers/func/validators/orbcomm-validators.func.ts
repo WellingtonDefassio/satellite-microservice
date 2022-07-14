@@ -24,14 +24,6 @@ export function convertMessageStatus(
   }
 }
 
-export function messagesExists(messagesToUpload) {
-  if (!messagesToUpload.length) {
-    throw new Error('no more messages available');
-  } else {
-    return messagesToUpload;
-  }
-}
-
 export const verifyPostMessages = (sendedData, responseData): Submission[] => {
   const validItems: Submission[] = [];
   responseData.Submissions.map((apiResponse) => {
@@ -68,4 +60,21 @@ export function validateDownloadData(
 
 export function validatePrismaPromise(args: any[]): any[] {
   return args.filter((value) => !Array.isArray(value));
+}
+
+/**
+ *
+ * @param {string} nameServiceTest [ the name of the operation on which the return is being tested ]
+ * @param { any[] } args [ the returned content being tested ]
+ * @returns [ if the tested content is an empty array it will return an error with the given name, otherwise it will return the given content ]
+ */
+
+export function arrayExistsValidate(nameServiceTest: string) {
+  return function (args: any[]) {
+    if (!args.length) {
+      throw new Error(`${nameServiceTest} no more data to processing`);
+    } else {
+      return args;
+    }
+  };
 }

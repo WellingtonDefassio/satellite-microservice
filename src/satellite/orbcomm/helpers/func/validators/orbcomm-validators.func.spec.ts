@@ -120,7 +120,7 @@ describe('Orbcomm-validators', () => {
   });
   describe('downloadMessages', () => {
     describe('validateDownloadData()', () => {
-      it('should the same input body if not throws', () => {
+      it('should return the same input body if not throws', () => {
         const correctBody = functions.validateDownloadData(
           mockDownloadMessageReturn,
         );
@@ -155,14 +155,35 @@ describe('Orbcomm-validators', () => {
         ]);
         expect(result).toEqual([{ anyObject: 'anyObject' }]);
       });
-      it('should return a data without empty array when is provide', () => {
+      it('should return a data a length array with size of concrete objects ', () => {
         const result = functions.validatePrismaPromise([
           [],
           [],
           [],
           { anyObject: 'anyObject' },
+          { anyObject: 'anyObject' },
+          { anyObject: 'anyObject' },
         ]);
-        expect(result.length).toEqual(1);
+        expect(result.length).toEqual(3);
+      });
+    });
+  });
+  describe('uploadMessage', () => {
+    describe('arrayExistsValidate()', () => {
+      it('should return the same input body if not throws', () => {
+        const result = functions.arrayExistsValidate('any_description')([
+          'any',
+          'args',
+        ]);
+
+        expect(result).toEqual(['any', 'args']);
+      });
+      it('should throw if no data is provide', () => {
+        const erroDescription = 'any_description';
+
+        expect(() =>
+          functions.arrayExistsValidate(erroDescription)([]),
+        ).toThrowError(`${erroDescription} no more data to processing`);
       });
     });
   });
