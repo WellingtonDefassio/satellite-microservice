@@ -43,24 +43,6 @@ export const orbcommDevices = (http: HttpService) => {
 
 ///TESTED!!
 
-export async function orbcommApiDownloadMessages(
-  body: BodyToGetMessage,
-  http: HttpService,
-): Promise<ReceiveDownloadData> {
-  try {
-    return await http.axiosRef
-      .get('http://localhost:3001/orbcomm/download', {
-        params: body,
-      })
-      .then((apiData) => apiData.data)
-      .catch((err) => {
-        throw new Error(err.message);
-      });
-  } catch (error) {
-    throw Error(error.message);
-  }
-}
-
 export async function apiRequest(
   link: string,
   method: ApiMethods,

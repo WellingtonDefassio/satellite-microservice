@@ -165,18 +165,27 @@ describe('OrbcommService', () => {
   });
 
   describe('downloadMessages', () => {
-    describe('orbcommApiDownloadMessages()', () => {
-      it('should return get with correct data', async () => {
-        const apiResponse = await functions.orbcommApiDownloadMessages(
+    describe('apiRequest()', () => {
+      it('should return with correct data', async () => {
+        const apiResponse = await functions.apiRequest(
+          'any_link.com',
+          ApiMethods.GET,
+          SendedType.PARAM,
           mockBodyToGetMessage,
           http,
         );
         expect(apiResponse).toEqual(mockDownloadMessageReturn);
       });
 
-      it('should call get when orbcommApiDownload is call', () => {
+      it('should call get when apiRequest() is call', async () => {
         const spyHttp = jest.spyOn(http.axiosRef, 'get');
-        functions.orbcommApiDownloadMessages(mockBodyToGetMessage, http);
+        await functions.apiRequest(
+          'any_link.com',
+          ApiMethods.GET,
+          SendedType.PARAM,
+          mockBodyToGetMessage,
+          http,
+        );
         expect(spyHttp).toHaveBeenCalledTimes(1);
       });
 
@@ -186,7 +195,10 @@ describe('OrbcommService', () => {
         });
         expect(
           async () =>
-            await functions.orbcommApiDownloadMessages(
+            await functions.apiRequest(
+              'any_link.com',
+              ApiMethods.GET,
+              SendedType.PARAM,
               mockBodyToGetMessage,
               http,
             ),
@@ -195,7 +207,7 @@ describe('OrbcommService', () => {
     });
   });
   describe('uploadMessage', () => {
-    describe('ApiRequest()', () => {
+    describe('apiRequest()', () => {
       it('should call http axios when ApiRequest is call', async () => {
         const spyHttp = jest.spyOn(http.axiosRef, 'post');
         await functions.apiRequest(
@@ -208,15 +220,29 @@ describe('OrbcommService', () => {
         expect(spyHttp).toBeCalledTimes(1);
       });
       it('should return call with correct data', async () => {
-        const spyHttp = jest.spyOn(http.axiosRef, 'post');
-        await functions.apiRequest(
+        const result = await functions.apiRequest(
           'www.any_link.com',
           ApiMethods.POST,
           SendedType.BODY,
           mockSendPostOrbcomm,
           http,
         );
-        expect(spyHttp).toBeCalledTimes(1);
+        expect(result).toEqual(mockPostMessageReturn);
+      });
+      it('should throws if axios throws', async () => {
+        jest.spyOn(http.axiosRef, 'post').mockImplementationOnce(() => {
+          throw new Error('Any Error');
+        });
+        expect(
+          async () =>
+            await functions.apiRequest(
+              'www.any_link.com',
+              ApiMethods.POST,
+              SendedType.BODY,
+              mockSendPostOrbcomm,
+              http,
+            ),
+        ).rejects.toThrowError('Any Error');
       });
     });
   });

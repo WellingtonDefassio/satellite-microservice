@@ -12,7 +12,6 @@ import {
   findMessagesByOrbcommStatus,
   findNextMessage,
   formatParamsToGetMessages,
-  orbcommApiDownloadMessages,
   orbcommDevices,
   verifyNewDevices,
   createDevicesOrbcomm,

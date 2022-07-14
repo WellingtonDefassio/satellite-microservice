@@ -335,9 +335,13 @@ describe('Orbcomm-db-func', () => {
   let service: OrbcommService;
   let prisma: PrismaService;
   let http: HttpService;
+  const env = process.env;
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest.resetModules();
+    process.env = { ...env };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrbcommService,
@@ -388,6 +392,10 @@ describe('Orbcomm-db-func', () => {
       ),
     );
   });
+  afterEach(() => {
+    process.env = env;
+  });
+
   describe('downloadMessage()', () => {
     //mock area
     jest
@@ -399,7 +407,7 @@ describe('Orbcomm-db-func', () => {
       .mockReturnValue(mockBodyToPost);
 
     jest
-      .spyOn(httpFunctions, 'orbcommApiDownloadMessages')
+      .spyOn(httpFunctions, 'apiRequest')
       .mockResolvedValue(mockDownloadMessageReturn);
 
     jest
@@ -473,54 +481,26 @@ describe('Orbcomm-db-func', () => {
         expect(spyFormatParamsToGetMessages).toHaveBeenCalledWith(null);
       });
     });
-    describe('orbcommApiDownloadMessages()', () => {
-      it('should call orbcommApiDownloadMessages() when downloadMessages is call', async () => {
-        const spyOrbcommApiDownloadMessages = jest.spyOn(
-          httpFunctions,
-          'orbcommApiDownloadMessages',
-        );
+    describe('apiRequest()', () => {
+      const link = (process.env.GET_ORBCOMM_LINK = 'mock_link');
+
+      it('should call apiRequest() when downloadMessages is call', async () => {
+        const spyApiRequest = jest.spyOn(httpFunctions, 'apiRequest');
 
         await service.downloadMessages();
 
-        expect(spyOrbcommApiDownloadMessages).toBeCalledTimes(1);
+        expect(spyApiRequest).toBeCalledTimes(1);
       });
-      it('should call orbcommApiDownloadMessages() with correct values', async () => {
-        const spyOrbcommApiDownloadMessages = jest.spyOn(
-          httpFunctions,
-          'orbcommApiDownloadMessages',
-        );
+      it('should call apiRequest() with correct values', async () => {
+        const spyApiRequest = jest.spyOn(httpFunctions, 'apiRequest');
 
         await service.downloadMessages();
 
-        expect(spyOrbcommApiDownloadMessages).toBeCalledWith(
+        expect(spyApiRequest).toBeCalledWith(
+          link,
+          'get',
+          'params',
           mockBodyToPost,
-          http,
-        );
-      });
-      it('should call orbcommApiDownloadMessages() with resolve value of findNextMessage() + http module', async () => {
-        jest
-          .spyOn(formatFunctions, 'formatParamsToGetMessages')
-          .mockReturnValueOnce({
-            access_id: 12345,
-            include_raw_payload: true,
-            password: '12345',
-            start_utc: 'any_utc',
-          });
-
-        const spyOrbcommApiDownloadMessages = jest.spyOn(
-          httpFunctions,
-          'orbcommApiDownloadMessages',
-        );
-
-        await service.downloadMessages();
-
-        expect(spyOrbcommApiDownloadMessages).toBeCalledWith(
-          {
-            access_id: 12345,
-            include_raw_payload: true,
-            password: '12345',
-            start_utc: 'any_utc',
-          },
           http,
         );
       });
@@ -550,9 +530,9 @@ describe('Orbcomm-db-func', () => {
         );
       });
 
-      it('should call validateDownloadData() with resolve value of orbcommApiDownloadMessages()', async () => {
+      it('should call validateDownloadData() with resolve value of apiRequest()', async () => {
         jest
-          .spyOn(httpFunctions, 'orbcommApiDownloadMessages')
+          .spyOn(httpFunctions, 'apiRequest')
           .mockResolvedValueOnce(mockDownloadWithoutPayload);
 
         const spyValidateDownloadData = jest.spyOn(
