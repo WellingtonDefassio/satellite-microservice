@@ -22,39 +22,6 @@ import {
   validatePrismaPromise,
 } from '../../index';
 
-export function saveAndUpdateMessages(
-  messages: Submission[],
-  prisma: PrismaService,
-) {
-  return new Promise((resolve) => {
-    const prismaList = [];
-    messages.forEach((message) => {
-      const createMessage = prisma.sendMessagesOrbcomm.create({
-        data: {
-          sendMessageId: message.UserMessageID,
-          deviceId: message.DestinationID,
-          fwrdMessageId: message.ForwardMessageID.toString(),
-          errorId: message.ErrorID,
-          status: OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
-        },
-      });
-      const updateMessage = prisma.sendMessages.update({
-        where: { id: message.UserMessageID },
-        data: {
-          status: {
-            set: convertMessageStatus(
-              OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
-            ),
-          },
-        },
-      });
-      prismaList.push(createMessage, updateMessage);
-    });
-
-    resolve(prisma.$transaction(prismaList));
-  });
-}
-
 export function updateFwdMessages(
   statusList: ForwardStatuses,
   prisma: PrismaService,
@@ -258,5 +225,37 @@ export async function findCreatedMessages(
       ],
     },
     take: 50,
+  });
+}
+
+export function createOrbcommSendMessage(
+  messages: Submission[],
+  prisma: PrismaService,
+) {
+  return messages.map((message) => {
+    return prisma.sendMessagesOrbcomm.create({
+      data: {
+        sendMessageId: message.UserMessageID,
+        deviceId: message.DestinationID,
+        fwrdMessageId: message.ForwardMessageID.toString(),
+        errorId: message.ErrorID,
+        status: OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+      },
+    });
+  });
+}
+
+export function createOrbcomm(messages: Submission[], prisma: PrismaService) {
+  return messages.map((message) => {
+    return prisma.sendMessages.update({
+      where: { id: message.UserMessageID },
+      data: {
+        status: {
+          set: convertMessageStatus(
+            OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+          ),
+        },
+      },
+    });
   });
 }

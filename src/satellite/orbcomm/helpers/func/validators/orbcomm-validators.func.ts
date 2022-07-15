@@ -1,5 +1,5 @@
 import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
-import { ReceiveDownloadData, Submission } from '../../index';
+import { MessagesPost, ReceiveDownloadData, Submission } from '../../index';
 
 export function convertMessageStatus(
   status: OrbcommMessageStatus,
@@ -23,19 +23,6 @@ export function convertMessageStatus(
       break;
   }
 }
-
-export const verifyPostMessages = (sendedData, responseData): Submission[] => {
-  const validItems: Submission[] = [];
-  responseData.Submissions.map((apiResponse) => {
-    const exists = sendedData.find(
-      (data) => data.UserMessageID === apiResponse.UserMessageID,
-    );
-    if (exists) {
-      validItems.push(apiResponse);
-    }
-  });
-  return validItems;
-};
 
 //TESTED
 
@@ -78,4 +65,27 @@ export function arrayExistsValidate(
       return args;
     }
   };
+}
+
+/**
+ *
+ * @param sendedData [ list data sent to api ]
+ * @param arg [ which argument of the sent list will be compared ]
+ * @param responseData [ list data returned from api ]
+ * @param arg2 [ which argument of the returned list should be compared ]
+ * @returns [ will return only the data in which there is both in the call and in the return so that it does not enter undue data ]
+ */
+
+export function validateApiRes(
+  sendedData: any[],
+  arg: string,
+  responseData: any[],
+  arg2: string,
+) {
+  if (!Array.isArray(sendedData) || !Array.isArray(responseData)) {
+    throw new Error('sendedData and responseData need to be a array!');
+  }
+  return responseData.filter((res) =>
+    sendedData.some((send) => res[arg2] === send[arg]),
+  );
 }

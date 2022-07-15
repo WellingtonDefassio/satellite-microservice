@@ -4,7 +4,8 @@ import { PrismaService } from '../../../../../prisma/prisma.service';
 import * as functions from '../../index';
 import { OrbcommService } from '../../../orbcomm.service';
 import { NotFoundException } from '@nestjs/common';
-import { MessageStatus } from '@prisma/client';
+import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
+import { convertMessageStatus, OrbcommStatusMap } from '../../index';
 
 const mockNextMessageReturn = {
   nextMessage: '2021-10-09 00:14:55',
@@ -329,6 +330,27 @@ const mockSendMessagesFindMany = [
     updatedAt: new Date('2022-07-01 13:00:00'),
   },
 ];
+
+const mockSendMessagesOrbcommResolve = {
+  id: 1,
+  sendMessageId: 5,
+  deviceId: 'DEVICE1',
+  fwrdMessageId: '123456',
+  status: OrbcommMessageStatus.TRANSMITTED,
+  errorId: 0,
+  createdAt: new Date('2020-06-07 22:13:23'),
+  updatedAt: new Date('2020-06-07 22:13:23'),
+};
+
+const mockUpdateSendMessage = {
+  id: 75,
+  payload: 'teste',
+  deviceId: '01719298SKY2247',
+  status: OrbcommMessageStatus.SUBMITTED,
+  createdAt: new Date('2020-06-07 22:13:23'),
+  updatedAt: new Date('2020-06-07 22:13:23'),
+};
+
 describe('Orbcomm-db-func', () => {
   let service: OrbcommService;
   let prisma: PrismaService;
@@ -356,6 +378,12 @@ describe('Orbcomm-db-func', () => {
             },
             sendMessages: {
               findMany: jest.fn().mockResolvedValue(mockSendMessagesFindMany),
+              update: jest.fn().mockResolvedValue(mockUpdateSendMessage),
+            },
+            sendMessagesOrbcomm: {
+              create: jest
+                .fn()
+                .mockResolvedValue(mockSendMessagesOrbcommResolve),
             },
             $transaction: jest
               .fn()
@@ -651,6 +679,86 @@ describe('Orbcomm-db-func', () => {
         expect(
           functions.findCreatedMessages('ORBCOMM_V2', prisma),
         ).resolves.toEqual(mockSendMessagesFindMany);
+      });
+    });
+    describe('createOrbcommSendMessage()', () => {
+      const mockApiResponse = [
+        {
+          ForwardMessageID: 103,
+          DestinationID: '01719298SKY2247',
+          ErrorID: 0,
+          UserMessageID: 68,
+        },
+      ];
+
+      it('should call sendMessagesOrbcomm.create when createOrbcommSendMessage is call', () => {
+        const spyCreateOrbcomm = jest
+          .spyOn(prisma.sendMessagesOrbcomm, 'create')
+          .mockResolvedValue(mockSendMessagesOrbcommResolve);
+
+        functions.createOrbcommSendMessage(mockApiResponse, prisma);
+
+        expect(spyCreateOrbcomm).toBeCalledTimes(1);
+      });
+      it('should call sendMessagesOrbcomm.create with correct params', () => {
+        const spyCreateOrbcomm = jest
+          .spyOn(prisma.sendMessagesOrbcomm, 'create')
+          .mockResolvedValue(mockSendMessagesOrbcommResolve);
+
+        functions.createOrbcommSendMessage(mockApiResponse, prisma);
+
+        expect(spyCreateOrbcomm).toBeCalledWith({
+          data: {
+            sendMessageId: mockApiResponse[0].UserMessageID,
+            deviceId: mockApiResponse[0].DestinationID,
+            fwrdMessageId: mockApiResponse[0].ForwardMessageID.toString(),
+            errorId: mockApiResponse[0].ErrorID,
+            status:
+              OrbcommMessageStatus[
+                OrbcommStatusMap[mockApiResponse[0].ErrorID]
+              ],
+          },
+        });
+      });
+    });
+    describe('createOrbcomm()', () => {
+      const mockApiResponse = [
+        {
+          ForwardMessageID: 103,
+          DestinationID: '01719298SKY2247',
+          ErrorID: 0,
+          UserMessageID: 68,
+        },
+      ];
+
+      it('should call sendMessages.update when createOrbcomm is call', () => {
+        const spyUpdate = jest
+          .spyOn(prisma.sendMessages, 'update')
+          .mockResolvedValue(mockUpdateSendMessage);
+
+        functions.createOrbcomm(mockApiResponse, prisma);
+
+        expect(spyUpdate).toBeCalledTimes(1);
+      });
+      it('should call sendMessages.up with correct param', () => {
+        const spyUpdate = jest
+          .spyOn(prisma.sendMessages, 'update')
+          .mockResolvedValue(mockUpdateSendMessage);
+
+        functions.createOrbcomm(mockApiResponse, prisma);
+
+        expect(spyUpdate).toBeCalledWith({
+          where: { id: mockApiResponse[0].UserMessageID },
+          data: {
+            status: {
+              set: convertMessageStatus(
+                OrbcommMessageStatus[
+                  OrbcommStatusMap[mockApiResponse[0].ErrorID]
+                ],
+              ),
+            },
+          },
+        });
       });
     });
   });

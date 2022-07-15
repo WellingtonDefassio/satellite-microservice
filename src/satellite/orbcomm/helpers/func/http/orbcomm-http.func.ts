@@ -10,7 +10,6 @@ import {
   ReceiveDownloadData,
   SendedType,
   Submission,
-  verifyPostMessages,
 } from '../../index';
 
 export const orbcommApiGetStatus = (

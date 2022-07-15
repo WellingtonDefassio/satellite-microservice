@@ -186,5 +186,111 @@ describe('Orbcomm-validators', () => {
         ).toThrowError(`${erroDescription} no more data to processing`);
       });
     });
+    describe('validateApiRes()', () => {
+      const mockSendMessage = [
+        {
+          id: 1,
+          name: 'any_name',
+        },
+        {
+          id: 2,
+          name: 'any_name2',
+        },
+        {
+          id: 3,
+          name: 'any_name2',
+        },
+      ];
+
+      const mockReturnMessage = [
+        {
+          id: 3,
+          name: 'any_name3',
+        },
+        {
+          id: 4,
+          name: 'any_name4',
+        },
+        {
+          id: 5,
+          name: 'any_name5',
+        },
+      ];
+      it('should return just match values', () => {
+        const result = functions.validateApiRes(
+          mockSendMessage,
+          'id',
+          mockReturnMessage,
+          'id',
+        );
+
+        expect(result).toEqual([
+          {
+            id: 3,
+            name: 'any_name3',
+          },
+        ]);
+      });
+      it('should responseData overlap the return', () => {
+        const mockReturnMessage2 = [
+          {
+            id: 2,
+            other: 'any_status',
+          },
+        ];
+
+        const result = functions.validateApiRes(
+          mockSendMessage,
+          'id',
+          mockReturnMessage2,
+          'id',
+        );
+
+        expect(result).toEqual([
+          {
+            id: 2,
+            other: 'any_status',
+          },
+        ]);
+      });
+      it('should return a empty array if no match values', () => {
+        const mockReturnMessage3 = [
+          {
+            id: 10,
+            other: 'any_status',
+          },
+        ];
+
+        const result = functions.validateApiRes(
+          mockSendMessage,
+          'id',
+          mockReturnMessage3,
+          'id',
+        );
+        expect(result).toEqual([]);
+      });
+      it('should throw a error if sendedData is not a array', () => {
+        const mockNotArrayObj = {};
+        expect(() =>
+          functions.validateApiRes(
+            mockNotArrayObj['notValid'],
+            'id',
+            mockSendMessage,
+            'id',
+          ),
+        ).toThrowError('sendedData and responseData need to be a array!');
+      });
+      it('should throw a error if responseData is not a array', () => {
+        const mockNotArrayObj = {};
+        expect(() =>
+          functions.validateApiRes(
+            mockSendMessage,
+            'id',
+            mockNotArrayObj['notValid'],
+            'id',
+          ),
+        ).toThrowError('sendedData and responseData need to be a array!');
+      });
+    });
   });
 });

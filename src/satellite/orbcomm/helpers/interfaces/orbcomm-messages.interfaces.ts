@@ -24,22 +24,19 @@ export interface StatusesType {
   Transport: string;
   RegionName: string;
 }
-export interface Submission {
-  ForwardMessageID: number;
-  DestinationID: string;
-  ErrorID: number;
-  UserMessageID: number;
-}
 
 export interface MessageBodyPost {
   access_id: string;
   password: string;
-  messages: {
-    DestinationID: string;
-    UserMessageID: number;
-    RawPayload: number[];
-  }[];
+  messages: MessagesPost[];
 }
+
+export interface MessagesPost {
+  DestinationID: string;
+  UserMessageID: number;
+  RawPayload: number[];
+}
+
 export interface MessageBodyGetStatus {
   access_id: string;
   password: string;

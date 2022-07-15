@@ -634,4 +634,85 @@ describe('Orbcomm-db-func', () => {
       });
     });
   });
+  describe('uploadMessage', () => {
+    describe('findCreatedMessages()', () => {
+      it('should call findCreatedMessages() when uploadMessage is call', async () => {
+        const spyFindCreatedMessages = jest.spyOn(
+          dbFunctions,
+          'findCreatedMessages',
+        );
+
+        await service.uploadMessage();
+
+        expect(spyFindCreatedMessages).toBeCalledTimes(1);
+      });
+      it('should call findCreatedMessages() with corrects values', async () => {
+        const spyFindCreatedMessages = jest.spyOn(
+          dbFunctions,
+          'findCreatedMessages',
+        );
+
+        await service.uploadMessage();
+
+        expect(spyFindCreatedMessages).toHaveBeenCalledWith(
+          'ORBCOMM_V2',
+          prisma,
+        );
+      });
+    });
+    describe('arrayExistsValidate()', () => {
+      it('should call arrayExistsValidate() when uploadMessage is call', async () => {
+        const spyArrayExistsValidate = jest.spyOn(
+          validatorFunctions,
+          'arrayExistsValidate',
+        );
+        await service.uploadMessage();
+
+        expect(spyArrayExistsValidate).toBeCalledTimes(1);
+      });
+      it('should call arrayExistsValidate() with corrects values', async () => {
+        const spyArrayExistsValidate = jest.spyOn(
+          validatorFunctions,
+          'arrayExistsValidate',
+        );
+        await service.uploadMessage();
+
+        expect(spyArrayExistsValidate).toBeCalledWith('findCreateMessages');
+      });
+    });
+    describe('formatMessagesToPostOrbcomm()', () => {
+      const access = (process.env.ACCESS_ID = 'mock_access');
+      const password = (process.env.PASSWORD = 'mock_password');
+      it('should call formatMessagesToPostOrbcomm() when uploadMessage', async () => {
+        const spyFormatMessagesToPostOrbcomm = jest.spyOn(
+          formatFunctions,
+          'formatMessagesToPostOrbcomm',
+        );
+        await service.uploadMessage();
+
+        expect(spyFormatMessagesToPostOrbcomm).toBeCalledTimes(1);
+      });
+      it('should call formatMessagesToPostOrbcomm() with corrects values', async () => {
+        const spyFormatMessagesToPostOrbcomm = jest.spyOn(
+          formatFunctions,
+          'formatMessagesToPostOrbcomm',
+        );
+        await service.uploadMessage();
+
+        expect(spyFormatMessagesToPostOrbcomm).toBeCalledWith({
+          access_id: access,
+          password: password,
+        });
+      });
+    });
+    // describe('apiRequest()', () => {
+    //   it('should call apiRequest() when uploadMessage', async () => {
+    //     const spyApiRequest = jest.spyOn(httpFunctions, 'apiRequest');
+
+    //     await service.uploadMessage();
+
+    //     expect(spyApiRequest).toBeCalledTimes(1);
+    //   });
+    // });
+  });
 });
