@@ -245,7 +245,10 @@ export function createOrbcommSendMessage(
   });
 }
 
-export function createOrbcomm(messages: Submission[], prisma: PrismaService) {
+export function createOrbcomm(
+  messages: Submission[],
+  prisma: PrismaService,
+): any[] {
   return messages.map((message) => {
     return prisma.sendMessages.update({
       where: { id: message.UserMessageID },

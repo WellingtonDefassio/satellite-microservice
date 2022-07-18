@@ -59,7 +59,7 @@ export class OrbcommService {
       const sendMessageOrbcomm = createOrbcommSendMessage(apiResponse, this.prisma)
       const sendMessage = createOrbcomm(apiResponse, this.prisma)
 
-      // processPrisma(sendMessageOrbcomm, sendMessage)
+     processPrisma(sendMessageOrbcomm, sendMessage)
 
 
     } catch (error) {
