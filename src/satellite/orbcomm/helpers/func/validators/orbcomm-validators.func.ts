@@ -58,7 +58,7 @@ export function validatePrismaPromise(args: any[]): any[] {
 export function arrayExistsValidate(
   nameServiceTest: string,
 ): (args: any[]) => any[] {
-  return function (args: any[]) {
+  return function (args: any[]): any[] {
     if (!args.length) {
       throw new Error(`${nameServiceTest} no more data to processing`);
     } else {
@@ -69,11 +69,11 @@ export function arrayExistsValidate(
 
 /**
  *
- * @param sendedData [ list data sent to api ]
+ * @param sendedData [ list of data sent to api ]
  * @param arg [ which argument of the sent list will be compared ]
- * @param responseData [ list data returned from api ]
+ * @param responseData [ list of data returned from api ]
  * @param arg2 [ which argument of the returned list should be compared ]
- * @returns [ will return only the data in which there is both in the call and in the return so that it does not enter undue data ]
+ * @returns [ will return only the data that matches with the data sent ]
  */
 
 export function validateApiRes(

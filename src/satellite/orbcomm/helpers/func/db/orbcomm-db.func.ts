@@ -231,7 +231,7 @@ export async function findCreatedMessages(
 export function createOrbcommSendMessage(
   messages: Submission[],
   prisma: PrismaService,
-) {
+): any[] {
   return messages.map((message) => {
     return prisma.sendMessagesOrbcomm.create({
       data: {

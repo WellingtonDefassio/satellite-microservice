@@ -48,18 +48,19 @@ export class OrbcommService {
     try {
       const formattedMessages =
         await findCreatedMessages('ORBCOMM_V2', this.prisma)
-             .then(arrayExistsValidate('findCreateMessages'))
-             .then(formatMessagesToPostOrbcomm(credentials))
+            .then(arrayExistsValidate('findCreateMessages'))
+            .then(formatMessagesToPostOrbcomm(credentials))
 
       const apiResponse =
         await apiRequest(postLink, ApiMethods.POST, SendedType.BODY, formattedMessages, this.http)
-      //     .then((apiRes) => validateApiRes(formattedMessages.messages, 'UserMessageID', apiRes.Submissions, 'UserMessageID'))
-      //     .then(arrayExistsValidate('apiRequest'))
+             .then((apiRes) => validateApiRes(formattedMessages.messages, 'UserMessageID', apiRes.Submissions, 'UserMessageID'))
+             .then(arrayExistsValidate('apiRequest'))
 
-      // const sendMessageOrbcomm = createOrbcommSendMessage(apiResponse, this.prisma)
-      // const sendMessage = createOrbcomm(apiResponse, this.prisma)
+      const sendMessageOrbcomm = createOrbcommSendMessage(apiResponse, this.prisma)
+      const sendMessage = createOrbcomm(apiResponse, this.prisma)
 
       // processPrisma(sendMessageOrbcomm, sendMessage)
+
 
     } catch (error) {
       console.log(error.message)
@@ -86,7 +87,6 @@ export class OrbcommService {
 
   //  @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
-    // console.log('DOWNLOAD MESSAGES PROCESS....');
 
     const getLink = process.env.GET_ORBCOMM_LINK
 
@@ -99,8 +99,6 @@ export class OrbcommService {
         await apiRequest(getLink, ApiMethods.GET, SendedType.PARAM, paramToPost, this.http)
           .then(validateDownloadData);
 
-
-
       const nextMessage = createNextUtc(paramToPost.start_utc, downloadMessages.NextStartUTC, this.prisma);
       const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
       const getMessages = createGetMessages(downloadMessages, this.prisma)
@@ -110,8 +108,6 @@ export class OrbcommService {
       console.log(error.message)
     }
 
-    // processPrisma pode retornar os elementos criados
-    //TODO para funcionamento atualizar os links 
   }
 
   // @Cron(CronExpression.EVERY_30_SECONDS)
