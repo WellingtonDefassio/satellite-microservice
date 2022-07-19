@@ -351,6 +351,29 @@ const mockUpdateSendMessage = {
   updatedAt: new Date('2020-06-07 22:13:23'),
 };
 
+const mockFindManyOrbcomm = [
+  {
+    id: 1,
+    sendMessageId: 5,
+    deviceId: 'DEVICE1',
+    fwrdMessageId: '123456',
+    status: OrbcommMessageStatus.SUBMITTED,
+    errorId: 0,
+    createdAt: new Date('2020-06-07 22:13:23'),
+    updatedAt: new Date('2020-06-07 22:13:23'),
+  },
+  {
+    id: 2,
+    sendMessageId: 6,
+    deviceId: 'DEVICE1',
+    fwrdMessageId: '123456',
+    status: OrbcommMessageStatus.WAITING,
+    errorId: 0,
+    createdAt: new Date('2020-06-07 22:13:23'),
+    updatedAt: new Date('2020-06-07 22:13:23'),
+  },
+];
+
 describe('Orbcomm-db-func', () => {
   let service: OrbcommService;
   let prisma: PrismaService;
@@ -384,6 +407,7 @@ describe('Orbcomm-db-func', () => {
               create: jest
                 .fn()
                 .mockResolvedValue(mockSendMessagesOrbcommResolve),
+              findMany: jest.fn().mockResolvedValue(mockFindManyOrbcomm),
             },
             $transaction: jest
               .fn()
@@ -759,6 +783,35 @@ describe('Orbcomm-db-func', () => {
             },
           },
         });
+      });
+    });
+  });
+  describe('checkMessages', () => {
+    describe('findMessagesToCheck()', () => {
+      it('should call sendMessagesOrbcomm.findMany when findMessagesToCheck is call', () => {
+        const spyFindMany = jest.spyOn(prisma.sendMessagesOrbcomm, 'findMany');
+
+        functions.findMessagesToCheck(prisma);
+
+        expect(spyFindMany).toHaveBeenCalledTimes(1);
+      });
+      it('should call sendMessagesOrbcomm.findMany with correct params', () => {
+        const spyFindMany = jest.spyOn(prisma.sendMessagesOrbcomm, 'findMany');
+
+        functions.findMessagesToCheck(prisma);
+
+        expect(spyFindMany).toHaveBeenCalledWith({
+          where: {
+            OR: [{ status: 'SUBMITTED' }, { status: 'WAITING' }],
+          },
+        });
+      });
+      it('should call sendMessagesOrbcomm.findMany with correct params', async () => {
+        jest.spyOn(prisma.sendMessagesOrbcomm, 'findMany');
+
+        const result = await functions.findMessagesToCheck(prisma);
+
+        expect(result).toEqual(mockFindManyOrbcomm);
       });
     });
   });

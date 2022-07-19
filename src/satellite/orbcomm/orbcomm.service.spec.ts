@@ -931,8 +931,8 @@ describe('Orbcomm-db-func', () => {
         await service.uploadMessage();
 
         expect(spyProcessPrisma).toHaveBeenCalledWith(
-          mockCreateOrbcommSendMessage,
-          mockUpdateSendMessage,
+          ...mockCreateOrbcommSendMessage,
+          ...mockUpdateSendMessage,
         );
       });
     });

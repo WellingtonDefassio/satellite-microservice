@@ -51,24 +51,6 @@ export function updateFwdMessages(
   prisma.$transaction(listUpdate);
 }
 
-export function findMessagesByOrbcommStatus(
-  prisma: PrismaService,
-): Promise<SendMessagesOrbcomm[]> {
-  const orbcommToUpdate = prisma.sendMessagesOrbcomm.findMany({
-    where: {
-      AND: [
-        {
-          sendMessage: {
-            device: { satelliteGateway: { name: { equals: 'ORBCOMM_V2' } } },
-          },
-        },
-        { status: { equals: 'SUBMITTED' } },
-      ],
-    },
-  });
-  return orbcommToUpdate;
-}
-
 export function verifyNewDevices(
   apiResponse: DeviceApi,
   prisma: PrismaService,
@@ -232,30 +214,78 @@ export function createOrbcommSendMessage(
   messages: Submission[],
   prisma: PrismaService,
 ): any[] {
-  return messages.map((message) => {
-    return prisma.sendMessagesOrbcomm.create({
-      data: {
-        sendMessageId: message.UserMessageID,
-        deviceId: message.DestinationID,
-        fwrdMessageId: message.ForwardMessageID.toString(),
-        errorId: message.ErrorID,
-        status: OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
-      },
+  try {
+    return messages.map((message) => {
+      return prisma.sendMessagesOrbcomm.create({
+        data: {
+          sendMessageId: message.UserMessageID,
+          deviceId: message.DestinationID,
+          fwrdMessageId: message.ForwardMessageID.toString(),
+          errorId: message.ErrorID,
+          status: OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+        },
+      });
     });
-  });
+  } catch (error) {
+    throw new Error(error.message);
+  }
 }
 
 export function createOrbcomm(
   messages: Submission[],
   prisma: PrismaService,
 ): any[] {
-  return messages.map((message) => {
+  try {
+    return messages.map((message) => {
+      return prisma.sendMessages.update({
+        where: { id: message.UserMessageID },
+        data: {
+          status: {
+            set: convertMessageStatus(
+              OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+            ),
+          },
+        },
+      });
+    });
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function findMessagesToCheck(prisma: PrismaService) {
+  return await prisma.sendMessagesOrbcomm.findMany({
+    where: {
+      OR: [{ status: 'SUBMITTED' }, { status: 'WAITING' }],
+    },
+  });
+}
+
+export function updateOrbcommStatus(
+  apiResponse: ForwardStatuses,
+  prisma: PrismaService,
+): any[] {
+  return apiResponse.Statuses.map((status) => {
+    return prisma.sendMessagesOrbcomm.update({
+      where: { sendMessageId: status.ReferenceNumber },
+      data: {
+        status: { set: OrbcommMessageStatus[OrbcommStatusMap[status.State]] },
+      },
+    });
+  });
+}
+
+export function updateSatelliteStatus(
+  apiResponse: ForwardStatuses,
+  prisma: PrismaService,
+): any[] {
+  return apiResponse.Statuses.map((status) => {
     return prisma.sendMessages.update({
-      where: { id: message.UserMessageID },
+      where: { id: status.ReferenceNumber },
       data: {
         status: {
           set: convertMessageStatus(
-            OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+            OrbcommMessageStatus[OrbcommStatusMap[status.State]],
           ),
         },
       },

@@ -4,11 +4,8 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
-  createListOfFwdIds,
-  formatMessageToGetStatus,
   orbcommApiGetStatus,
   updateFwdMessages,
-  findMessagesByOrbcommStatus,
   findNextMessage,
   formatParamsToGetMessages,
   orbcommDevices,
@@ -31,6 +28,10 @@ import {
   validateApiRes,
   createOrbcommSendMessage,
   createOrbcomm,
+  findMessagesToCheck,
+  formatMessagesToCheckOrbcomm,
+  updateOrbcommStatus,
+  updateSatelliteStatus,
 } from './helpers/index';
 
 
@@ -39,7 +40,7 @@ import {
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) { }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_10_SECONDS)
   async uploadMessage() {
     console.log('SEND MESSAGES PROCESS.....');
     const postLink = process.env.POST_LINK_ORBCOMM
@@ -48,18 +49,24 @@ export class OrbcommService {
     try {
       const formattedMessages =
         await findCreatedMessages('ORBCOMM_V2', this.prisma)
-            .then(arrayExistsValidate('findCreateMessages'))
-            .then(formatMessagesToPostOrbcomm(credentials))
+          .then(arrayExistsValidate('findCreateMessages'))
+          .then(formatMessagesToPostOrbcomm(credentials))
 
       const apiResponse =
         await apiRequest(postLink, ApiMethods.POST, SendedType.BODY, formattedMessages, this.http)
-             .then((apiRes) => validateApiRes(formattedMessages.messages, 'UserMessageID', apiRes.Submissions, 'UserMessageID'))
-             .then(arrayExistsValidate('apiRequest'))
+          .then((apiRes) => validateApiRes(formattedMessages.messages, 'UserMessageID', apiRes.Submissions, 'UserMessageID'))
+          .then(arrayExistsValidate('apiRequest'))
+
+
 
       const sendMessageOrbcomm = createOrbcommSendMessage(apiResponse, this.prisma)
       const sendMessage = createOrbcomm(apiResponse, this.prisma)
 
-     processPrisma(sendMessageOrbcomm, sendMessage)
+
+
+      processPrisma(...sendMessageOrbcomm, ...sendMessage)(this.prisma)
+
+
 
 
     } catch (error) {
@@ -67,19 +74,25 @@ export class OrbcommService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMessages() {
-    console.log('UPDATE MESSAGES PROCESS...');
+    const link = process.env.GET_STATUS_ORBCOMM
+
+    const credentials = { access_id: process.env.ACCESS_ID, password: process.env.PASSWORD }
 
     try {
-      findMessagesByOrbcommStatus(this.prisma)
-        .then(createListOfFwdIds)
-        // .then(messagesExists)
-        .then(formatMessageToGetStatus)
-        .then((getParam) => orbcommApiGetStatus(getParam, this.http))
-        .then((apiResponse) => updateFwdMessages(apiResponse, this.prisma))
+      const messagesToCheck = await findMessagesToCheck(this.prisma)
+        .then(arrayExistsValidate('findMessagesToCheck'))
+        .then(formatMessagesToCheckOrbcomm(credentials))
 
-        .catch((erro) => console.log(erro.message));
+      const apiResponse = await apiRequest(link, ApiMethods.GET, SendedType.PARAM, messagesToCheck, this.http)
+
+      const updateOrbcomm = updateOrbcommStatus(apiResponse, this.prisma)
+      const updateSatellite = updateSatelliteStatus(apiResponse, this.prisma)
+
+
+      await processPrisma(...updateOrbcomm, ...updateSatellite)(this.prisma)
+
     } catch (error) {
       console.log(error.message)
     }
@@ -103,7 +116,7 @@ export class OrbcommService {
       const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
       const getMessages = createGetMessages(downloadMessages, this.prisma)
 
-      await processPrisma(nextMessage, ...versionMobile, ...getMessages)(this.prisma)
+      await  processPrisma(nextMessage, ...versionMobile, ...getMessages)(this.prisma)
     } catch (error) {
       console.log(error.message)
     }

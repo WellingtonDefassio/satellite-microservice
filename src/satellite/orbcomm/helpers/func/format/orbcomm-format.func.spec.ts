@@ -1,4 +1,4 @@
-import { MessageStatus } from '@prisma/client';
+import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
 import * as functions from '../../index';
 
 const mockDownloadMessageReturn = {
@@ -121,6 +121,29 @@ const mockSendMessagesFindMany = [
   },
 ];
 
+const mockFrwdMessagesToCheck = [
+  {
+    id: 1,
+    sendMessageId: 22,
+    deviceId: 'abc123456',
+    fwrdMessageId: '231',
+    status: OrbcommMessageStatus.SUBMITTED,
+    errorId: 0,
+    createdAt: new Date('2022-06-07 22:13:23'),
+    updatedAt: new Date('2022-06-07 22:13:23'),
+  },
+  {
+    id: 1,
+    sendMessageId: 22,
+    deviceId: 'abc123456',
+    fwrdMessageId: '299',
+    status: OrbcommMessageStatus.SUBMITTED,
+    errorId: 0,
+    createdAt: new Date('2022-06-07 22:13:23'),
+    updatedAt: new Date('2022-06-07 22:13:23'),
+  },
+];
+
 describe('Orbcomm-format-func', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -233,6 +256,32 @@ describe('Orbcomm-format-func', () => {
         );
         expect(result.access_id).toEqual(mockCredentials.access_id);
         expect(result.password).toEqual(mockCredentials.password);
+      });
+    });
+  });
+  describe('checkMessages', () => {
+    describe('formatMessagesToCheckOrbcomm()', () => {
+      const mockCredentials = {
+        access_id: 'mock_access',
+        password: 'mock_password',
+      };
+      it('should return a correct body to check messages', () => {
+        const result = functions.formatMessagesToCheckOrbcomm(mockCredentials)(
+          mockFrwdMessagesToCheck,
+        );
+        expect(result).toEqual({
+          access_id: mockCredentials.access_id,
+          password: mockCredentials.password,
+          fwIDs: mockFrwdMessagesToCheck.map((value) => value.fwrdMessageId),
+        });
+      });
+      it('should return with correct properties', () => {
+        const result = functions.formatMessagesToCheckOrbcomm(mockCredentials)(
+          mockFrwdMessagesToCheck,
+        );
+        expect(result).toHaveProperty('fwIDs');
+        expect(result).toHaveProperty('password');
+        expect(result).toHaveProperty('access_id');
       });
     });
   });

@@ -293,4 +293,23 @@ describe('Orbcomm-validators', () => {
       });
     });
   });
+  describe('checkMessages', () => {
+    describe('arrayExistsValidate()', () => {
+      it('should return the same input body if not throws', () => {
+        const result = functions.arrayExistsValidate('any_description')([
+          'any',
+          'args',
+        ]);
+
+        expect(result).toEqual(['any', 'args']);
+      });
+      it('should throw if no data is provide', () => {
+        const erroDescription = 'any_description';
+
+        expect(() =>
+          functions.arrayExistsValidate(erroDescription)([]),
+        ).toThrowError(`${erroDescription} no more data to processing`);
+      });
+    });
+  });
 });

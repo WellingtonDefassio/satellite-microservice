@@ -1,33 +1,11 @@
 import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
 import {
   BodyToGetMessage,
-  MessageBodyGetStatus,
+  MessageBodyCheck,
   MessageBodyPost,
   ReceiveDownloadData,
   ReceiveDownloadMessageData,
 } from '../../index';
-
-export function createListOfFwdIds(messagesToCheck: SendMessagesOrbcomm[]) {
-  const listOfFwIds = [];
-
-  messagesToCheck.forEach((message) => {
-    listOfFwIds.push(message.fwrdMessageId);
-  });
-
-  return listOfFwIds;
-}
-
-export function formatMessageToGetStatus(listOfFwrId: number[]) {
-  const messageBodyPost: MessageBodyGetStatus = {
-    access_id: 'any_access',
-    password: 'any_password',
-    fwIDs: [],
-  };
-  listOfFwrId.forEach((n) => {
-    messageBodyPost.fwIDs.push(n);
-  });
-  return messageBodyPost;
-}
 
 //tested!
 
@@ -100,5 +78,23 @@ export function formatMessagesToPostOrbcomm(credentials: {
       }),
     );
     return messageBodyPost;
+  };
+}
+
+export function formatMessagesToCheckOrbcomm(credentials: {
+  access_id: string;
+  password: string;
+}) {
+  const messageBodyCheck: MessageBodyCheck = {
+    access_id: credentials.access_id,
+    password: credentials.password,
+    fwIDs: [],
+  };
+
+  return function (messagesToCheck: SendMessagesOrbcomm[]) {
+    messageBodyCheck.fwIDs = messagesToCheck.map(
+      (message) => message.fwrdMessageId,
+    );
+    return messageBodyCheck;
   };
 }

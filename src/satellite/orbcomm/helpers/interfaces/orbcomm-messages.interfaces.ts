@@ -128,3 +128,9 @@ export enum SendedType {
   PARAM = 'params',
   BODY = 'body',
 }
+
+export interface MessageBodyCheck {
+  access_id: string;
+  password: string;
+  fwIDs: string[];
+}
