@@ -1,32 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import {
-  ApiMethods,
-  BodyToGetMessage,
-  DeviceApi,
-  DownloadResponse,
-  ForwardStatuses,
-  MessageBodyGetStatus,
-  MessageBodyPost,
-  ReceiveDownloadData,
-  SendedType,
-  Submission,
-} from '../../index';
-
-export const orbcommApiGetStatus = (
-  body: MessageBodyGetStatus,
-  http: HttpService,
-) => {
-  return new Promise<ForwardStatuses>((resolve, reject) => {
-    http.axiosRef
-      .get('http://localhost:3001/orbcomm/getfwd', { params: body })
-      .then((apiResponse) => {
-        resolve(apiResponse.data);
-      })
-      .catch((error) => {
-        reject(error.message);
-      });
-  });
-};
+import { ApiMethods, DeviceApi, SendedType } from '../../index';
 
 export const orbcommDevices = (http: HttpService) => {
   return new Promise<DeviceApi>((resolve, reject) => {

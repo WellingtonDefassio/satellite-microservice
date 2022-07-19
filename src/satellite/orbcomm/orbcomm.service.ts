@@ -4,20 +4,16 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
-  orbcommApiGetStatus,
   findNextMessage,
   formatParamsToGetMessages,
   orbcommDevices,
   verifyNewDevices,
   createDevicesOrbcomm,
-  getString,
   validateDownloadData,
   createNextUtc,
-  filterPayload,
   upsertVersionMobile,
   createGetMessages,
   processPrisma,
-  BasicOrbcomm,
   findCreatedMessages,
   arrayExistsValidate,
   formatMessagesToPostOrbcomm,
@@ -32,7 +28,6 @@ import {
   updateOrbcommStatus,
   updateSatelliteStatus,
 } from './helpers/index';
-
 
 
 @Injectable()
