@@ -527,14 +527,14 @@ describe('Orbcomm-db-func', () => {
                 .fn()
                 .mockResolvedValue(mockOrbcommVersionDeviceResolved),
             },
-            orbcommGetMessage: {
+            orbcommGetMessages: {
               create: jest.fn().mockResolvedValue(mockGetMessageResolved),
             },
-            sendMessages: {
+            satelliteSendMessages: {
               findMany: jest.fn().mockResolvedValue(mockResolvedFindMany),
               update: jest.fn().mockResolvedValue(mockUpdateSendMessage),
             },
-            sendMessagesOrbcomm: {
+            orbcommSendMessages: {
               create: jest.fn().mockResolvedValue(mockCreateOrbcommSendMessage),
               findMany: jest.fn().mockResolvedValue(mockFindManyOrbcomm),
               update: jest.fn().mockResolvedValue(mockUpdateOrbcommSendMessage),

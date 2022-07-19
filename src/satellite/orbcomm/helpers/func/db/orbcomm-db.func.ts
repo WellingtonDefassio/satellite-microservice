@@ -127,7 +127,7 @@ export function createGetMessages(
   const formattedMessages = formatGetMessages(downloadMessages);
 
   return formattedMessages.map((message) => {
-    return prisma.orbcommGetMessage.create({
+    return prisma.orbcommGetMessages.create({
       data: message,
     });
   });
@@ -158,7 +158,7 @@ export async function findCreatedMessages(
   gateway: string,
   prisma: PrismaService,
 ) {
-  return await prisma.sendMessages.findMany({
+  return await prisma.satelliteSendMessages.findMany({
     where: {
       AND: [
         { status: { equals: 'CREATED' } },
@@ -179,7 +179,7 @@ export function createOrbcommSendMessage(
 ): any[] {
   try {
     return messages.map((message) => {
-      return prisma.sendMessagesOrbcomm.create({
+      return prisma.orbcommSendMessages.create({
         data: {
           sendMessageId: message.UserMessageID,
           deviceId: message.DestinationID,
@@ -200,7 +200,7 @@ export function createOrbcomm(
 ): any[] {
   try {
     return messages.map((message) => {
-      return prisma.sendMessages.update({
+      return prisma.satelliteSendMessages.update({
         where: { id: message.UserMessageID },
         data: {
           status: {
@@ -217,7 +217,7 @@ export function createOrbcomm(
 }
 
 export async function findMessagesToCheck(prisma: PrismaService) {
-  return await prisma.sendMessagesOrbcomm.findMany({
+  return await prisma.orbcommSendMessages.findMany({
     where: {
       OR: [{ status: 'SUBMITTED' }, { status: 'WAITING' }],
     },
@@ -229,7 +229,7 @@ export function updateOrbcommStatus(
   prisma: PrismaService,
 ): any[] {
   return apiResponse.Statuses.map((status) => {
-    return prisma.sendMessagesOrbcomm.update({
+    return prisma.orbcommSendMessages.update({
       where: { sendMessageId: status.ReferenceNumber },
       data: {
         status: { set: OrbcommMessageStatus[OrbcommStatusMap[status.State]] },
@@ -243,7 +243,7 @@ export function updateSatelliteStatus(
   prisma: PrismaService,
 ): any[] {
   return apiResponse.Statuses.map((status) => {
-    return prisma.sendMessages.update({
+    return prisma.satelliteSendMessages.update({
       where: { id: status.ReferenceNumber },
       data: {
         status: {

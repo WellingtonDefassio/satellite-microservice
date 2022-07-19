@@ -10,21 +10,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model SendMessages {
+model SatelliteSendMessages {
   id             Int                  @id @default(autoincrement())
   payload        String
   deviceId       String
   device         Devices              @relation(fields: [deviceId], references: [deviceId])
   status         MessageStatus        @default(CREATED)
-  orbcommMessage SendMessagesOrbcomm?
+  orbcommMessage OrbcommSendMessages?
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 }
 
-model SendMessagesOrbcomm {
+model OrbcommSendMessages {
   id            Int                   @id @default(autoincrement())
   sendMessageId Int                   @unique
-  sendMessage   SendMessages          @relation(fields: [sendMessageId], references: [id])
+  sendMessage   SatelliteSendMessages          @relation(fields: [sendMessageId], references: [id])
   deviceId      String
   fwrdMessageId String
   status        OrbcommMessageStatus?
@@ -42,8 +42,8 @@ model Devices {
   status           DeviceStatus
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-  messages         SendMessages[]
-  messagesGet      OrbcommGetMessage[]  
+  messages         SatelliteSendMessages[]
+  messagesGet      OrbcommGetMessages[]  
   versionDevice    OrbcommVersionDevice?  
 
 }
@@ -61,13 +61,13 @@ model OrbcommNextMessage {
   createdAt DateTime @default(now())
 }
 
-model OrbcommGetMessage {
+model OrbcommGetMessages {
   id Int @default(autoincrement()) @id
   messageId String @unique
   messageUTC DateTime
   receiveUTC DateTime
   deviceId       String?
-  device         Devices?              @relation(fields: [deviceId], references: [deviceId])
+  device         Devices?            @relation(fields: [deviceId], references: [deviceId])
   SIN Int
   MIN Int
   payload String @db.MediumText

@@ -10,7 +10,11 @@ export class SatelliteController {
   @Post('messages')
   @UsePipes(FetchByDeviceID)
   async sendMessage(@Body() body: SendMessageDto) {
-    console.log('Controller body :' + JSON.stringify(body));
-    return this.satelliteService.sendMessage(body);
+    try {
+      console.log('Controller body :' + JSON.stringify(body));
+      return this.satelliteService.sendMessage(body);
+    } catch (error) {
+      throw Error(error.message);
+    }
   }
 }

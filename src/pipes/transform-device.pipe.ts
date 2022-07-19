@@ -20,7 +20,7 @@ export class FetchByDeviceID implements PipeTransform {
       where: { deviceId: body.deviceId },
     });
     if (!fetchDevice) {
-      throw new NotFoundException('device not found');
+      throw new NotFoundException({ error: 'device not found' });
     }
     const device = {
       id: fetchDevice.id,

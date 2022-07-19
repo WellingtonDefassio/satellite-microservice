@@ -34,7 +34,7 @@ import {
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) { }
 
-  // @Cron(CronExpression.EVERY_30_SECONDS)
+  //  @Cron(CronExpression.EVERY_30_SECONDS)
   async uploadMessage() {
    
     const postLink = process.env.POST_LINK_ORBCOMM
@@ -62,7 +62,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async checkMessages() {
     const link = process.env.GET_STATUS_ORBCOMM
 
@@ -88,7 +88,7 @@ export class OrbcommService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_30_SECONDS)
+//  @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
 
     console.log('DOWNLOAD SERVICE START')

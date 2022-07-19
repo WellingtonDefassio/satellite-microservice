@@ -1,4 +1,4 @@
-import { SendMessages, SendMessagesOrbcomm } from '@prisma/client';
+import { OrbcommSendMessages, SatelliteSendMessages } from '@prisma/client';
 import {
   BodyToGetMessage,
   MessageBodyCheck,
@@ -66,13 +66,13 @@ export function formatGetMessages(downloadMessages: ReceiveDownloadData) {
 export function formatMessagesToPostOrbcomm(credentials: {
   access_id: string;
   password: string;
-}): (messages: SendMessages[]) => MessageBodyPost {
+}): (messages: SatelliteSendMessages[]) => MessageBodyPost {
   const messageBodyPost: MessageBodyPost = {
     access_id: credentials.access_id,
     password: credentials.password,
     messages: [],
   };
-  return function (messages: SendMessages[]): MessageBodyPost {
+  return function (messages: SatelliteSendMessages[]): MessageBodyPost {
     messages.forEach((message) =>
       messageBodyPost.messages.push({
         DestinationID: message.deviceId,
@@ -94,7 +94,7 @@ export function formatMessagesToCheckOrbcomm(credentials: {
     fwIDs: [],
   };
 
-  return function (messagesToCheck: SendMessagesOrbcomm[]) {
+  return function (messagesToCheck: OrbcommSendMessages[]) {
     messageBodyCheck.fwIDs = messagesToCheck.map(
       (message) => message.fwrdMessageId,
     );

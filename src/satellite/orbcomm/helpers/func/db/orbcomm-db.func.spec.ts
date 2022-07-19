@@ -446,14 +446,14 @@ describe('Orbcomm-db-func', () => {
                 .fn()
                 .mockResolvedValue(mockOrbcommVersionDeviceResolved),
             },
-            orbcommGetMessage: {
+            orbcommGetMessages: {
               create: jest.fn().mockResolvedValue(mockGetMessageResolved),
             },
-            sendMessages: {
+            satelliteSendMessages: {
               findMany: jest.fn().mockResolvedValue(mockSendMessagesFindMany),
               update: jest.fn().mockResolvedValue(mockUpdateSendMessage),
             },
-            sendMessagesOrbcomm: {
+            orbcommSendMessages: {
               create: jest
                 .fn()
                 .mockResolvedValue(mockSendMessagesOrbcommResolve),
@@ -635,19 +635,19 @@ describe('Orbcomm-db-func', () => {
     });
     describe('createGetMessages()', () => {
       it('should call orbcommGetMessage.create when createGetMessages is call', async () => {
-        const spyCreate = jest.spyOn(prisma.orbcommGetMessage, 'create');
+        const spyCreate = jest.spyOn(prisma.orbcommGetMessages, 'create');
 
         functions.createGetMessages(mockDownloadMessageReturn, prisma);
         expect(spyCreate).toBeCalledTimes(1);
       });
       it('should call orbcommGetMessage.create 2 times when 2 messages is provide', async () => {
-        const spyCreate = jest.spyOn(prisma.orbcommGetMessage, 'create');
+        const spyCreate = jest.spyOn(prisma.orbcommGetMessages, 'create');
 
         functions.createGetMessages(mockDownloadMessage2Return, prisma);
         expect(spyCreate).toBeCalledTimes(2);
       });
       it('should call orbcommGetMessage.create with correct params', async () => {
-        const spyCreate = jest.spyOn(prisma.orbcommGetMessage, 'create');
+        const spyCreate = jest.spyOn(prisma.orbcommGetMessages, 'create');
 
         functions.createGetMessages(mockDownloadMessageReturn, prisma);
         const transformData = functions.formatGetMessages(
@@ -659,7 +659,7 @@ describe('Orbcomm-db-func', () => {
 
       it('should return a create message', async () => {
         jest
-          .spyOn(prisma.orbcommGetMessage, 'create')
+          .spyOn(prisma.orbcommGetMessages, 'create')
           .mockResolvedValue(mockGetMessageResolved);
 
         const result = functions.createGetMessages(
@@ -720,7 +720,7 @@ describe('Orbcomm-db-func', () => {
     describe('findCreatedMessages()', () => {
       it('should call sendMessages.findMany when findCreatedMessages is call', () => {
         const spyFindMany = jest
-          .spyOn(prisma.sendMessages, 'findMany')
+          .spyOn(prisma.satelliteSendMessages, 'findMany')
           .mockResolvedValue(mockSendMessagesFindMany);
 
         functions.findCreatedMessages('ORBCOMM_V2', prisma);
@@ -729,7 +729,7 @@ describe('Orbcomm-db-func', () => {
       });
       it('should call sendMessages.findMany with correct params', () => {
         const spyFindMany = jest
-          .spyOn(prisma.sendMessages, 'findMany')
+          .spyOn(prisma.satelliteSendMessages, 'findMany')
           .mockResolvedValue(mockSendMessagesFindMany);
 
         functions.findCreatedMessages('ORBCOMM_V2', prisma);
@@ -750,7 +750,7 @@ describe('Orbcomm-db-func', () => {
       });
       it('should call sendMessages.findMany resolves to correct value', () => {
         jest
-          .spyOn(prisma.sendMessages, 'findMany')
+          .spyOn(prisma.satelliteSendMessages, 'findMany')
           .mockResolvedValue(mockSendMessagesFindMany);
 
         expect(
@@ -770,7 +770,7 @@ describe('Orbcomm-db-func', () => {
 
       it('should call sendMessagesOrbcomm.create when createOrbcommSendMessage is call', () => {
         const spyCreateOrbcomm = jest
-          .spyOn(prisma.sendMessagesOrbcomm, 'create')
+          .spyOn(prisma.orbcommSendMessages, 'create')
           .mockResolvedValue(mockSendMessagesOrbcommResolve);
 
         functions.createOrbcommSendMessage(mockApiResponse, prisma);
@@ -779,7 +779,7 @@ describe('Orbcomm-db-func', () => {
       });
       it('should call sendMessagesOrbcomm.create with correct params', () => {
         const spyCreateOrbcomm = jest
-          .spyOn(prisma.sendMessagesOrbcomm, 'create')
+          .spyOn(prisma.orbcommSendMessages, 'create')
           .mockResolvedValue(mockSendMessagesOrbcommResolve);
 
         functions.createOrbcommSendMessage(mockApiResponse, prisma);
@@ -810,7 +810,7 @@ describe('Orbcomm-db-func', () => {
 
       it('should call sendMessages.update when createOrbcomm is call', () => {
         const spyUpdate = jest
-          .spyOn(prisma.sendMessages, 'update')
+          .spyOn(prisma.satelliteSendMessages, 'update')
           .mockResolvedValue(mockUpdateSendMessage);
 
         functions.createOrbcomm(mockApiResponse, prisma);
@@ -819,7 +819,7 @@ describe('Orbcomm-db-func', () => {
       });
       it('should call sendMessages.up with correct param', () => {
         const spyUpdate = jest
-          .spyOn(prisma.sendMessages, 'update')
+          .spyOn(prisma.satelliteSendMessages, 'update')
           .mockResolvedValue(mockUpdateSendMessage);
 
         functions.createOrbcomm(mockApiResponse, prisma);
@@ -842,14 +842,14 @@ describe('Orbcomm-db-func', () => {
   describe('checkMessages', () => {
     describe('findMessagesToCheck()', () => {
       it('should call sendMessagesOrbcomm.findMany when findMessagesToCheck is call', () => {
-        const spyFindMany = jest.spyOn(prisma.sendMessagesOrbcomm, 'findMany');
+        const spyFindMany = jest.spyOn(prisma.orbcommSendMessages, 'findMany');
 
         functions.findMessagesToCheck(prisma);
 
         expect(spyFindMany).toHaveBeenCalledTimes(1);
       });
       it('should call sendMessagesOrbcomm.findMany with correct params', () => {
-        const spyFindMany = jest.spyOn(prisma.sendMessagesOrbcomm, 'findMany');
+        const spyFindMany = jest.spyOn(prisma.orbcommSendMessages, 'findMany');
 
         functions.findMessagesToCheck(prisma);
 
@@ -860,7 +860,7 @@ describe('Orbcomm-db-func', () => {
         });
       });
       it('should call sendMessagesOrbcomm.findMany return correct values', async () => {
-        jest.spyOn(prisma.sendMessagesOrbcomm, 'findMany');
+        jest.spyOn(prisma.orbcommSendMessages, 'findMany');
 
         const result = await functions.findMessagesToCheck(prisma);
 
@@ -874,7 +874,7 @@ describe('Orbcomm-db-func', () => {
 
       it('should call sendMessagesOrbcomm.update when updateOrbcommStatus is call', async () => {
         const spyUpdatePrisma = jest.spyOn(
-          prisma.sendMessagesOrbcomm,
+          prisma.orbcommSendMessages,
           'update',
         );
 
@@ -887,7 +887,7 @@ describe('Orbcomm-db-func', () => {
           .spyOn(httpFunctions, 'apiRequest')
           .mockResolvedValue(mockStatusesResponseWithOneReturn);
         const spyUpdatePrisma = jest.spyOn(
-          prisma.sendMessagesOrbcomm,
+          prisma.orbcommSendMessages,
           'update',
         );
 
@@ -912,14 +912,20 @@ describe('Orbcomm-db-func', () => {
     });
     describe('updateSatelliteStatus()', () => {
       it('should call sendMessages.update when updateSatelliteStatus is call', async () => {
-        const spyUpdateSatellite = jest.spyOn(prisma.sendMessages, 'update');
+        const spyUpdateSatellite = jest.spyOn(
+          prisma.satelliteSendMessages,
+          'update',
+        );
 
         await service.checkMessages();
 
         expect(spyUpdateSatellite).toBeCalledTimes(1);
       });
       it('should call sendMessages.update with correct params', async () => {
-        const spyUpdateSatellite = jest.spyOn(prisma.sendMessages, 'update');
+        const spyUpdateSatellite = jest.spyOn(
+          prisma.satelliteSendMessages,
+          'update',
+        );
 
         await service.checkMessages();
 
