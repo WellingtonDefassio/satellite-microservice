@@ -5,7 +5,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   orbcommApiGetStatus,
-  updateFwdMessages,
   findNextMessage,
   formatParamsToGetMessages,
   orbcommDevices,
@@ -58,16 +57,10 @@ export class OrbcommService {
           .then(arrayExistsValidate('apiRequest'))
 
 
-
       const sendMessageOrbcomm = createOrbcommSendMessage(apiResponse, this.prisma)
       const sendMessage = createOrbcomm(apiResponse, this.prisma)
 
-
-
       processPrisma(...sendMessageOrbcomm, ...sendMessage)(this.prisma)
-
-
-
 
     } catch (error) {
       console.log(error.message)

@@ -1,55 +1,18 @@
 import { NotFoundException } from '@nestjs/common';
-import {
-  OrbcommGetMessage,
-  OrbcommMessageStatus,
-  prisma,
-  PrismaPromise,
-  SendMessagesOrbcomm,
-} from '@prisma/client';
+import { OrbcommMessageStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   convertMessageStatus,
   DeviceApi,
-  DownloadResponse,
   filterPayload,
   formatGetMessages,
   ForwardStatuses,
   OrbcommStatusMap,
   ReceiveDownloadData,
-  ReceiveDownloadMessageData,
   Submission,
   Terminals,
   validatePrismaPromise,
 } from '../../index';
-
-export function updateFwdMessages(
-  statusList: ForwardStatuses,
-  prisma: PrismaService,
-) {
-  console.log(statusList);
-  const listUpdate = [];
-  statusList.Statuses.forEach((status) => {
-    const updateSendMessage = prisma.sendMessages.update({
-      where: { id: status.ReferenceNumber },
-      data: {
-        status: {
-          set: convertMessageStatus(
-            OrbcommMessageStatus[OrbcommStatusMap[status.State]],
-          ),
-        },
-      },
-    });
-    const updateOrbcommMessage = prisma.sendMessagesOrbcomm.update({
-      where: { sendMessageId: status.ReferenceNumber },
-      data: {
-        status: { set: OrbcommMessageStatus[OrbcommStatusMap[status.State]] },
-      },
-    });
-    listUpdate.push(updateOrbcommMessage, updateSendMessage);
-  });
-
-  prisma.$transaction(listUpdate);
-}
 
 export function verifyNewDevices(
   apiResponse: DeviceApi,

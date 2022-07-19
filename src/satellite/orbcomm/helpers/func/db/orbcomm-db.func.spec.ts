@@ -6,6 +6,7 @@ import { OrbcommService } from '../../../orbcomm.service';
 import { NotFoundException } from '@nestjs/common';
 import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
 import { convertMessageStatus, OrbcommStatusMap } from '../../index';
+import * as httpFunctions from '../http/orbcomm-http.func';
 
 const mockNextMessageReturn = {
   nextMessage: '2021-10-09 00:14:55',
@@ -342,6 +343,17 @@ const mockSendMessagesOrbcommResolve = {
   updatedAt: new Date('2020-06-07 22:13:23'),
 };
 
+const mockSendUpdateMessagesOrbcommResolve = {
+  id: 100,
+  sendMessageId: 5,
+  deviceId: 'DEVICE1',
+  fwrdMessageId: '123456',
+  status: OrbcommMessageStatus.RECEIVED,
+  errorId: 0,
+  createdAt: new Date('2020-06-07 22:13:23'),
+  updatedAt: new Date('2020-06-07 22:13:23'),
+};
+
 const mockUpdateSendMessage = {
   id: 75,
   payload: 'teste',
@@ -373,6 +385,44 @@ const mockFindManyOrbcomm = [
     updatedAt: new Date('2020-06-07 22:13:23'),
   },
 ];
+
+const mockStatusesResponse = {
+  ErrorID: 0,
+  Statuses: [
+    {
+      ForwardMessageID: 2140143842,
+      IsClosed: true,
+      State: 1,
+      StateUTC: '2022-06-07 00:01:44',
+      ReferenceNumber: 775,
+      Transport: 'SAT',
+      RegionName: 'AORWSC',
+    },
+    {
+      ForwardMessageID: 2140144129,
+      IsClosed: true,
+      State: 1,
+      StateUTC: '2022-06-07 00:02:14',
+      ReferenceNumber: 839,
+      Transport: 'SAT',
+      RegionName: 'AORWSC',
+    },
+  ],
+};
+const mockStatusesResponseWithOneReturn = {
+  ErrorID: 0,
+  Statuses: [
+    {
+      ForwardMessageID: 2140143842,
+      IsClosed: true,
+      State: 1,
+      StateUTC: '2022-06-07 00:01:44',
+      ReferenceNumber: 775,
+      Transport: 'SAT',
+      RegionName: 'AORWSC',
+    },
+  ],
+};
 
 describe('Orbcomm-db-func', () => {
   let service: OrbcommService;
@@ -408,6 +458,9 @@ describe('Orbcomm-db-func', () => {
                 .fn()
                 .mockResolvedValue(mockSendMessagesOrbcommResolve),
               findMany: jest.fn().mockResolvedValue(mockFindManyOrbcomm),
+              update: jest
+                .fn()
+                .mockResolvedValue(mockSendUpdateMessagesOrbcommResolve),
             },
             $transaction: jest
               .fn()
@@ -648,7 +701,7 @@ describe('Orbcomm-db-func', () => {
           mockNextMessageCreated,
         ]);
       });
-      it('should processPrisma if no data is provide', () => {
+      it('should throw processPrisma if no data is provide', () => {
         jest
           .spyOn(prisma, '$transaction')
           .mockResolvedValue([
@@ -806,12 +859,86 @@ describe('Orbcomm-db-func', () => {
           },
         });
       });
-      it('should call sendMessagesOrbcomm.findMany with correct params', async () => {
+      it('should call sendMessagesOrbcomm.findMany return correct values', async () => {
         jest.spyOn(prisma.sendMessagesOrbcomm, 'findMany');
 
         const result = await functions.findMessagesToCheck(prisma);
 
         expect(result).toEqual(mockFindManyOrbcomm);
+      });
+    });
+    describe('updateOrbcommStatus()', () => {
+      jest
+        .spyOn(httpFunctions, 'apiRequest')
+        .mockResolvedValue(mockStatusesResponse);
+
+      it('should call sendMessagesOrbcomm.update when updateOrbcommStatus is call', async () => {
+        const spyUpdatePrisma = jest.spyOn(
+          prisma.sendMessagesOrbcomm,
+          'update',
+        );
+
+        await service.checkMessages();
+
+        expect(spyUpdatePrisma).toBeCalledTimes(2);
+      });
+      it('should call sendMessagesOrbcomm.update with correct params', async () => {
+        jest
+          .spyOn(httpFunctions, 'apiRequest')
+          .mockResolvedValue(mockStatusesResponseWithOneReturn);
+        const spyUpdatePrisma = jest.spyOn(
+          prisma.sendMessagesOrbcomm,
+          'update',
+        );
+
+        await service.checkMessages();
+
+        expect(spyUpdatePrisma).toBeCalledWith({
+          where: {
+            sendMessageId:
+              mockStatusesResponseWithOneReturn.Statuses[0].ReferenceNumber,
+          },
+          data: {
+            status: {
+              set: OrbcommMessageStatus[
+                OrbcommStatusMap[
+                  mockStatusesResponseWithOneReturn.Statuses[0].State
+                ]
+              ],
+            },
+          },
+        });
+      });
+    });
+    describe('updateSatelliteStatus()', () => {
+      it('should call sendMessages.update when updateSatelliteStatus is call', async () => {
+        const spyUpdateSatellite = jest.spyOn(prisma.sendMessages, 'update');
+
+        await service.checkMessages();
+
+        expect(spyUpdateSatellite).toBeCalledTimes(1);
+      });
+      it('should call sendMessages.update with correct params', async () => {
+        const spyUpdateSatellite = jest.spyOn(prisma.sendMessages, 'update');
+
+        await service.checkMessages();
+
+        expect(spyUpdateSatellite).toBeCalledWith({
+          where: {
+            id: mockStatusesResponseWithOneReturn.Statuses[0].ReferenceNumber,
+          },
+          data: {
+            status: {
+              set: convertMessageStatus(
+                OrbcommMessageStatus[
+                  OrbcommStatusMap[
+                    mockStatusesResponseWithOneReturn.Statuses[0].State
+                  ]
+                ],
+              ),
+            },
+          },
+        });
       });
     });
   });
