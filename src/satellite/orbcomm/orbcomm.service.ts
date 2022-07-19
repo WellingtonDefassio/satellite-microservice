@@ -34,7 +34,7 @@ import {
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) { }
 
-  // @Cron(CronExpression.EVERY_10_SECONDS)
+  //  @Cron(CronExpression.EVERY_30_SECONDS)
   async uploadMessage() {
    
     const postLink = process.env.POST_LINK_ORBCOMM
@@ -62,7 +62,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async checkMessages() {
     const link = process.env.GET_STATUS_ORBCOMM
 
@@ -79,22 +79,24 @@ export class OrbcommService {
         const updateSatellite = updateSatelliteStatus(apiResponse, this.prisma)
 
 
-      // await processPrisma(...updateOrbcomm, ...updateSatellite)(this.prisma)
+      await processPrisma(...updateOrbcomm, ...updateSatellite)(this.prisma)
 
     } catch (error) {
       console.log(error.message)
     }
   }
 
-  //  @Cron(CronExpression.EVERY_30_SECONDS)
+   @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
-
+console.log('DOWNLOAD SERVICE START')
     const getLink = process.env.GET_ORBCOMM_LINK
+    const credentials = { access_id: process.env.ACCESS_ID, password: process.env.PASSWORD }
+    
 
     try {
       const paramToPost =
         await findNextMessage(this.prisma)
-          .then(formatParamsToGetMessages);
+          .then(formatParamsToGetMessages(credentials));
 
       const downloadMessages =
         await apiRequest(getLink, ApiMethods.GET, SendedType.PARAM, paramToPost, this.http)
@@ -104,14 +106,17 @@ export class OrbcommService {
       const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
       const getMessages = createGetMessages(downloadMessages, this.prisma)
 
-      await  processPrisma(nextMessage, ...versionMobile, ...getMessages)(this.prisma)
+      processPrisma(nextMessage, ...versionMobile, ...getMessages)(this.prisma)
+
+      console.log('FINISH DOWNLOAD PROCESS')
+
     } catch (error) {
       console.log(error.message)
     }
 
   }
 
-  // @Cron(CronExpression.EVERY_30_SECONDS)
+  //  @Cron(CronExpression.EVERY_30_SECONDS)
   async updateDevices() {
     console.log('DEVICES UPLOAD START.....');
 

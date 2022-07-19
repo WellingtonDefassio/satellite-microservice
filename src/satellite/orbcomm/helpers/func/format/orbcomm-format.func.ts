@@ -9,25 +9,28 @@ import {
 
 //tested!
 
-export function formatParamsToGetMessages(
-  nextMessage: string,
-): BodyToGetMessage {
-  try {
-    const messageBodyToGet: BodyToGetMessage = {
-      access_id: 70002657,
-      password: 'ZFLLYNJL',
-      include_raw_payload: true,
-      start_utc: nextMessage.trim(),
-    };
-    Object.values(messageBodyToGet).forEach((value) => {
-      if (!!value == false) {
-        throw Error('Missing ParamsToGetMessages!!');
-      }
-    });
-    return messageBodyToGet;
-  } catch (error) {
-    throw Error(error.message);
-  }
+export function formatParamsToGetMessages(credentials: {
+  access_id: string;
+  password: string;
+}) {
+  return function (nextMessage: string) {
+    try {
+      const messageBodyToGet: BodyToGetMessage = {
+        access_id: credentials.access_id,
+        password: credentials.password,
+        include_raw_payload: true,
+        start_utc: nextMessage.trim(),
+      };
+      Object.values(messageBodyToGet).forEach((value) => {
+        if (!!value == false) {
+          throw Error('Missing ParamsToGetMessages!!');
+        }
+      });
+      return messageBodyToGet;
+    } catch (error) {
+      throw Error(error.message);
+    }
+  };
 }
 
 export function filterPayload(

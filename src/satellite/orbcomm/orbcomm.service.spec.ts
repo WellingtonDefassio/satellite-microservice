@@ -339,8 +339,8 @@ const mockGetMessageResolved = [
 ];
 
 const mockBodyToPost = {
-  access_id: 70002657,
-  password: 'ZFLLYNJL',
+  access_id: 'any',
+  password: 'any',
   include_raw_payload: true,
   start_utc: 'any_utc_body',
 };
@@ -583,7 +583,7 @@ describe('Orbcomm-db-func', () => {
 
     jest
       .spyOn(formatFunctions, 'formatParamsToGetMessages')
-      .mockReturnValue(mockBodyToPost);
+      .mockReturnValue(() => mockBodyToPost);
 
     jest
       .spyOn(httpFunctions, 'apiRequest')
@@ -627,6 +627,8 @@ describe('Orbcomm-db-func', () => {
       });
     });
     describe('formatParamsToGetMessages()', () => {
+      const access_id = (process.env.ACCESS_ID = 'mock_access');
+      const password = (process.env.PASSWORD = 'mock_password');
       it('should call formatParamsToGetMessages() when downloadMessages is call', async () => {
         const spyFormatParamsToGetMessages = jest.spyOn(
           formatFunctions,
@@ -643,21 +645,10 @@ describe('Orbcomm-db-func', () => {
         );
         await service.downloadMessages();
 
-        expect(spyFormatParamsToGetMessages).toBeCalledWith(
-          mockNextMessageReturn.nextMessage,
-        );
-      });
-      it('should call formatParamsToGetMessages() with resolve value of findNextMessage()', async () => {
-        jest.spyOn(dbFunctions, 'findNextMessage').mockResolvedValueOnce(null);
-
-        const spyFormatParamsToGetMessages = jest.spyOn(
-          formatFunctions,
-          'formatParamsToGetMessages',
-        );
-
-        await service.downloadMessages();
-
-        expect(spyFormatParamsToGetMessages).toHaveBeenCalledWith(null);
+        expect(spyFormatParamsToGetMessages).toBeCalledWith({
+          access_id,
+          password,
+        });
       });
     });
     describe('apiRequest()', () => {

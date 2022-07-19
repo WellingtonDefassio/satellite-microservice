@@ -143,6 +143,10 @@ const mockFrwdMessagesToCheck = [
     updatedAt: new Date('2022-06-07 22:13:23'),
   },
 ];
+const mockCredentials = {
+  access_id: 'mock_credentials_access',
+  password: 'mock_password',
+};
 
 describe('Orbcomm-format-func', () => {
   beforeEach(async () => {
@@ -151,12 +155,18 @@ describe('Orbcomm-format-func', () => {
   describe('downloadMessages', () => {
     describe('formatParamsToGetMessages()', () => {
       it('should return a correct start_utc', () => {
-        const formattedParams = functions.formatParamsToGetMessages('10-10-10');
+        const formattedParams =
+          functions.formatParamsToGetMessages(mockCredentials)('10-10-10');
 
-        expect(formattedParams.start_utc).toEqual('10-10-10');
+        expect(formattedParams).toEqual({
+          ...mockCredentials,
+          include_raw_payload: true,
+          start_utc: '10-10-10',
+        });
       });
       it('should return a object with correct body', () => {
-        const formattedParams = functions.formatParamsToGetMessages('any_data');
+        const formattedParams =
+          functions.formatParamsToGetMessages(mockCredentials)('10-10-10');
 
         expect(formattedParams).toHaveProperty('access_id');
         expect(formattedParams).toHaveProperty('password');
@@ -165,7 +175,10 @@ describe('Orbcomm-format-func', () => {
       });
       it('should throw if not provides all params to getMessageApi', () => {
         expect(() => {
-          functions.formatParamsToGetMessages('');
+          functions.formatParamsToGetMessages({
+            access_id: '',
+            password: '',
+          })('10-10-10');
         }).toThrowError('Missing ParamsToGetMessages!!');
       });
     });
