@@ -7,6 +7,7 @@ import * as formatFunctions from './helpers/func/format/orbcomm-format.func';
 import * as httpFunctions from './helpers/func/http/orbcomm-http.func';
 import * as validatorFunctions from './helpers/func/validators/orbcomm-validators.func';
 import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
+import { ApiMethods, SendedType } from './helpers';
 
 const mockNextMessageReturn = {
   nextMessage: '2021-10-09 00:14:55',
@@ -38,6 +39,18 @@ const mockDownloadWithoutPayload = {
       CustomerID: 0,
       Transport: 1,
       MobileOwnerID: 60002657,
+    },
+  ],
+};
+
+const mockReturnHttpGet = {
+  anyObject: 'anyValorToTest',
+  anyArray: [
+    {
+      anyObjectArray: 'AnyValueArray',
+    },
+    {
+      anyObjectArray: 'AnyValueArray',
     },
   ],
 };
@@ -374,16 +387,40 @@ const mockPostResponse = {
   ],
 };
 
+const mockArrayExistsValidate = {
+  Submissions: [
+    {
+      ForwardMessageID: 123,
+      DestinationID: 'any_destination',
+      ErrorID: 0,
+      UserMessageID: 1111,
+    },
+  ],
+  fwIDs: ['12345', '23456', '34567'],
+};
+
 const mockCreateOrbcommSendMessage = [
   {
     id: 1,
     sendMessageId: 2,
     deviceId: 'anyDeviceId',
-    fwrdMessageId: 123,
+    fwrdMessageId: '123',
     status: OrbcommMessageStatus.SUBMITTED,
     errorId: 0,
     createdAt: new Date('2022-06-07 22:13:23'),
-    updateAt: new Date('2022-06-07 22:13:23'),
+    updatedAt: new Date('2022-06-07 22:13:23'),
+  },
+];
+const mockUpdateOrbcommSendMessage = [
+  {
+    id: 1,
+    sendMessageId: 2,
+    deviceId: 'any_update_device',
+    fwrdMessageId: '123',
+    status: OrbcommMessageStatus.TRANSMITTED,
+    errorId: 0,
+    createdAt: new Date('2022-06-07 22:13:23'),
+    updatedAt: new Date('2022-06-07 22:13:23'),
   },
 ];
 
@@ -397,6 +434,72 @@ const mockUpdateSendMessage = [
     updatedAt: new Date('2022-06-07 22:13:23'),
   },
 ];
+
+const mockFindMessagesToCheck = [
+  {
+    id: 1,
+    sendMessageId: 2,
+    deviceId: 'any_checked',
+    fwrdMessageId: '123',
+    status: OrbcommMessageStatus.SUBMITTED,
+    errorId: 0,
+    createdAt: new Date('2022-06-07 22:13:23'),
+    updatedAt: new Date('2022-06-07 22:13:23'),
+  },
+];
+
+const mockFindManyOrbcomm = [
+  {
+    id: 1,
+    sendMessageId: 5,
+    deviceId: 'DEVICE1',
+    fwrdMessageId: '123456',
+    status: OrbcommMessageStatus.SUBMITTED,
+    errorId: 0,
+    createdAt: new Date('2020-06-07 22:13:23'),
+    updatedAt: new Date('2020-06-07 22:13:23'),
+  },
+  {
+    id: 2,
+    sendMessageId: 6,
+    deviceId: 'DEVICE1',
+    fwrdMessageId: '123456',
+    status: OrbcommMessageStatus.WAITING,
+    errorId: 0,
+    createdAt: new Date('2020-06-07 22:13:23'),
+    updatedAt: new Date('2020-06-07 22:13:23'),
+  },
+];
+
+const mockMessagesToCheckOrbcomm = {
+  access_id: 'any_access_mock',
+  password: 'any_password_mock',
+  fwIDs: ['12345', '23456', '34567'],
+};
+
+const mockStatusesResponse = {
+  ErrorID: 0,
+  Statuses: [
+    {
+      ForwardMessageID: 2140143842,
+      IsClosed: true,
+      State: 1,
+      StateUTC: '2022-06-07 00:01:44',
+      ReferenceNumber: 775,
+      Transport: 'SAT',
+      RegionName: 'AORWSC',
+    },
+    {
+      ForwardMessageID: 2140144129,
+      IsClosed: true,
+      State: 1,
+      StateUTC: '2022-06-07 00:02:14',
+      ReferenceNumber: 839,
+      Transport: 'SAT',
+      RegionName: 'AORWSC',
+    },
+  ],
+};
 
 describe('Orbcomm-db-func', () => {
   let service: OrbcommService;
@@ -433,6 +536,8 @@ describe('Orbcomm-db-func', () => {
             },
             sendMessagesOrbcomm: {
               create: jest.fn().mockResolvedValue(mockCreateOrbcommSendMessage),
+              findMany: jest.fn().mockResolvedValue(mockFindManyOrbcomm),
+              update: jest.fn().mockResolvedValue(mockUpdateOrbcommSendMessage),
             },
             $transaction: jest
               .fn()
@@ -447,7 +552,7 @@ describe('Orbcomm-db-func', () => {
           provide: HttpService,
           useValue: {
             axiosRef: {
-              get: jest.fn().mockReturnValue(mockDownloadMessageReturn),
+              get: jest.fn().mockReturnValue(mockReturnHttpGet),
             },
           },
         },
@@ -461,7 +566,7 @@ describe('Orbcomm-db-func', () => {
     jest.spyOn(http.axiosRef, 'get').mockResolvedValue(
       new Promise((resolve) =>
         resolve({
-          data: mockDownloadMessageReturn,
+          data: mockReturnHttpGet,
         }),
       ),
     );
@@ -482,7 +587,7 @@ describe('Orbcomm-db-func', () => {
 
     jest
       .spyOn(httpFunctions, 'apiRequest')
-      .mockResolvedValue(mockDownloadMessageReturn);
+      .mockResolvedValue(mockReturnHttpGet);
 
     jest
       .spyOn(validatorFunctions, 'validateDownloadData')
@@ -599,9 +704,7 @@ describe('Orbcomm-db-func', () => {
 
         await service.downloadMessages();
 
-        expect(spyValidateDownloadData).toBeCalledWith(
-          mockDownloadMessageReturn,
-        );
+        expect(spyValidateDownloadData).toBeCalledWith(mockReturnHttpGet);
       });
 
       it('should call validateDownloadData() with resolve value of apiRequest()', async () => {
@@ -716,10 +819,6 @@ describe('Orbcomm-db-func', () => {
       .mockResolvedValue(mockResolvedFindMany);
 
     jest
-      .spyOn(validatorFunctions, 'arrayExistsValidate')
-      .mockReturnValue(() => mockResolvedFindMany);
-
-    jest
       .spyOn(formatFunctions, 'formatMessagesToPostOrbcomm')
       .mockReturnValue(() => mockFormatMessagesToPostOrbcomm);
 
@@ -773,15 +872,6 @@ describe('Orbcomm-db-func', () => {
         await service.uploadMessage();
 
         expect(spyArrayExistsValidate).toBeCalledTimes(2);
-      });
-      it('should call arrayExistsValidate() with corrects values', async () => {
-        const spyArrayExistsValidate = jest.spyOn(
-          validatorFunctions,
-          'arrayExistsValidate',
-        );
-        await service.uploadMessage();
-
-        expect(spyArrayExistsValidate).toBeCalledWith('findCreateMessages');
       });
       it('should call arrayExistsValidate() with corrects values', async () => {
         const spyArrayExistsValidate = jest.spyOn(
@@ -934,6 +1024,165 @@ describe('Orbcomm-db-func', () => {
           ...mockCreateOrbcommSendMessage,
           ...mockUpdateSendMessage,
         );
+      });
+    });
+  });
+  describe('checkMessages()', () => {
+    //mock area
+    const access = (process.env.ACCESS_ID = 'mock_access');
+    const password = (process.env.PASSWORD = 'mock_password');
+
+    const link = (process.env.GET_STATUS_ORBCOMM = 'mock_get_status');
+    jest
+      .spyOn(dbFunctions, 'findMessagesToCheck')
+      .mockResolvedValue(mockFindMessagesToCheck);
+
+    jest
+      .spyOn(formatFunctions, 'formatMessagesToCheckOrbcomm')
+      .mockReturnValue(() => mockMessagesToCheckOrbcomm);
+
+    jest
+      .spyOn(dbFunctions, 'updateOrbcommStatus')
+      .mockReturnValue(mockUpdateOrbcommSendMessage);
+
+    jest
+      .spyOn(dbFunctions, 'updateSatelliteStatus')
+      .mockReturnValue(mockUpdateSendMessage);
+
+    describe('findMessagesToCheck()', () => {
+      it('should call findMessagesToCheck() when checkMessages is call', async () => {
+        const spyFindMessagesToCheck = jest.spyOn(
+          dbFunctions,
+          'findMessagesToCheck',
+        );
+
+        await service.checkMessages();
+
+        expect(spyFindMessagesToCheck).toBeCalledTimes(1);
+      });
+      it('should call findMessagesToCheck() with correct values', async () => {
+        const spyFindMessagesToCheck = jest.spyOn(
+          dbFunctions,
+          'findMessagesToCheck',
+        );
+
+        await service.checkMessages();
+
+        expect(spyFindMessagesToCheck).toBeCalledWith(prisma);
+      });
+    });
+    describe('arrayExistsValidate()', () => {
+      it('should call arrayExistsValidate() when checkMessages is call', async () => {
+        const spyArrayExists = jest.spyOn(
+          validatorFunctions,
+          'arrayExistsValidate',
+        );
+
+        await service.checkMessages();
+
+        expect(spyArrayExists).toBeCalledTimes(1);
+      });
+      it('should call arrayExistsValidate() with correct values', async () => {
+        const spyArrayExists = jest.spyOn(
+          validatorFunctions,
+          'arrayExistsValidate',
+        );
+
+        await service.checkMessages();
+
+        expect(spyArrayExists).toHaveBeenCalledWith('findMessagesToCheck');
+      });
+    });
+    describe('formatMessagesToCheckOrbcomm()', () => {
+      it('should call formatMessagesToCheckOrbcomm() when checkMessage is call', async () => {
+        const spyFormatMessagesToCheckOrbcomm = jest.spyOn(
+          formatFunctions,
+          'formatMessagesToCheckOrbcomm',
+        );
+
+        await service.checkMessages();
+
+        expect(spyFormatMessagesToCheckOrbcomm).toBeCalledTimes(1);
+      });
+      it('should call formatMessagesToCheckOrbcomm() with correct values', async () => {
+        const spyFormatMessagesToCheckOrbcomm = jest.spyOn(
+          formatFunctions,
+          'formatMessagesToCheckOrbcomm',
+        );
+
+        await service.checkMessages();
+
+        expect(spyFormatMessagesToCheckOrbcomm).toBeCalledWith({
+          access_id: access,
+          password: password,
+        });
+      });
+    });
+    describe('apiRequest()', () => {
+      it('should call apiRequest() when checkMessages is call', async () => {
+        const spyApiRequest = jest.spyOn(httpFunctions, 'apiRequest');
+
+        await service.checkMessages();
+
+        expect(spyApiRequest).toBeCalledTimes(1);
+      });
+      it('should call apiRequest() with correct params', async () => {
+        const spyApiRequest = jest.spyOn(httpFunctions, 'apiRequest');
+
+        await service.checkMessages();
+
+        expect(spyApiRequest).toHaveBeenCalledWith(
+          link,
+          ApiMethods.GET,
+          SendedType.PARAM,
+          mockMessagesToCheckOrbcomm,
+          http,
+        );
+      });
+    });
+    describe('updateOrbcommStatus()', () => {
+      it('should call updateOrbcommStatus() when checkMessages is call', async () => {
+        const spyUpdateOrbcommStatus = jest.spyOn(
+          dbFunctions,
+          'updateOrbcommStatus',
+        );
+
+        await service.checkMessages();
+
+        expect(spyUpdateOrbcommStatus).toBeCalledTimes(1);
+      });
+      it('should call updateOrbcommStatus() with correct values', async () => {
+        const spyUpdateOrbcommStatus = jest.spyOn(
+          dbFunctions,
+          'updateOrbcommStatus',
+        );
+
+        await service.checkMessages();
+
+        expect(spyUpdateOrbcommStatus).toBeCalledWith(
+          mockReturnHttpGet,
+          prisma,
+        );
+      });
+    });
+    describe('updateSatelliteStatus()', () => {
+      it('should call updateSatelliteStatus() when checkMessages is call', async () => {
+        const spyUpdateSatellite = jest.spyOn(
+          dbFunctions,
+          'updateSatelliteStatus',
+        );
+        await service.checkMessages();
+
+        expect(spyUpdateSatellite).toBeCalledTimes(1);
+      });
+      it('should call updateSatelliteStatus() with correct values', async () => {
+        const spyUpdateSatellite = jest.spyOn(
+          dbFunctions,
+          'updateSatelliteStatus',
+        );
+        await service.checkMessages();
+
+        expect(spyUpdateSatellite).toBeCalledWith(mockReturnHttpGet, prisma);
       });
     });
   });

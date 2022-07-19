@@ -36,7 +36,7 @@ export class OrbcommService {
 
   // @Cron(CronExpression.EVERY_10_SECONDS)
   async uploadMessage() {
-    console.log('SEND MESSAGES PROCESS.....');
+   
     const postLink = process.env.POST_LINK_ORBCOMM
     const credentials = { access_id: process.env.ACCESS_ID, password: process.env.PASSWORD }
 
@@ -73,13 +73,13 @@ export class OrbcommService {
         .then(arrayExistsValidate('findMessagesToCheck'))
         .then(formatMessagesToCheckOrbcomm(credentials))
 
-      const apiResponse = await apiRequest(link, ApiMethods.GET, SendedType.PARAM, messagesToCheck, this.http)
+       const apiResponse = await apiRequest(link, ApiMethods.GET, SendedType.PARAM, messagesToCheck, this.http)
 
-      const updateOrbcomm = updateOrbcommStatus(apiResponse, this.prisma)
-      const updateSatellite = updateSatelliteStatus(apiResponse, this.prisma)
+        const updateOrbcomm = updateOrbcommStatus(apiResponse, this.prisma)
+        const updateSatellite = updateSatelliteStatus(apiResponse, this.prisma)
 
 
-      await processPrisma(...updateOrbcomm, ...updateSatellite)(this.prisma)
+      // await processPrisma(...updateOrbcomm, ...updateSatellite)(this.prisma)
 
     } catch (error) {
       console.log(error.message)
