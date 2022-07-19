@@ -34,9 +34,10 @@ export function convertMessageStatus(
 export function validateDownloadData(
   body: ReceiveDownloadData,
 ): ReceiveDownloadData {
-  if (body.Messages === null) throw new Error('no more messages available');
+  if (body.Messages === null && body.ErrorID === 0)
+    throw new Error('no more messages available');
   if (body.ErrorID !== 0)
-    throw new Error(`Error id ${body.ErrorID} check the api error!`);
+    throw new Error(`ErrorID ${body.ErrorID} check the api error!`);
   else return body;
 }
 
@@ -59,6 +60,7 @@ export function arrayExistsValidate(
   nameServiceTest: string,
 ): (args: any[]) => any[] {
   return function (args: any[]): any[] {
+    console.log(args);
     if (!args.length) {
       throw new Error(`${nameServiceTest} no more data to processing`);
     } else {

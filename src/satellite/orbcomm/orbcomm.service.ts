@@ -34,7 +34,7 @@ import {
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) { }
 
-  //  @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async uploadMessage() {
    
     const postLink = process.env.POST_LINK_ORBCOMM
@@ -62,7 +62,7 @@ export class OrbcommService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async checkMessages() {
     const link = process.env.GET_STATUS_ORBCOMM
 
@@ -72,6 +72,8 @@ export class OrbcommService {
       const messagesToCheck = await findMessagesToCheck(this.prisma)
         .then(arrayExistsValidate('findMessagesToCheck'))
         .then(formatMessagesToCheckOrbcomm(credentials))
+
+        
 
        const apiResponse = await apiRequest(link, ApiMethods.GET, SendedType.PARAM, messagesToCheck, this.http)
 
@@ -86,13 +88,14 @@ export class OrbcommService {
     }
   }
 
-   @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
-console.log('DOWNLOAD SERVICE START')
+
+    console.log('DOWNLOAD SERVICE START')
+
     const getLink = process.env.GET_ORBCOMM_LINK
     const credentials = { access_id: process.env.ACCESS_ID, password: process.env.PASSWORD }
     
-
     try {
       const paramToPost =
         await findNextMessage(this.prisma)
@@ -108,12 +111,9 @@ console.log('DOWNLOAD SERVICE START')
 
       processPrisma(nextMessage, ...versionMobile, ...getMessages)(this.prisma)
 
-      console.log('FINISH DOWNLOAD PROCESS')
-
     } catch (error) {
       console.log(error.message)
     }
-
   }
 
   //  @Cron(CronExpression.EVERY_30_SECONDS)

@@ -129,7 +129,7 @@ describe('Orbcomm-validators', () => {
       it('should throws if api return ErrorID different of zero 0 ', () => {
         expect(() =>
           functions.validateDownloadData(mockDownloadMessageErrorID),
-        ).toThrowError('Error id 100 check the api error!');
+        ).toThrowError('ErrorID 100 check the api error!');
       });
       it('should throws if api return messages with null params ', () => {
         expect(() =>
