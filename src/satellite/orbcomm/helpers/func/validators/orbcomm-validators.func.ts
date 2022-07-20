@@ -60,7 +60,6 @@ export function arrayExistsValidate(
   nameServiceTest: string,
 ): (args: any[]) => any[] {
   return function (args: any[]): any[] {
-    console.log(args);
     if (!args.length) {
       throw new Error(`${nameServiceTest} no more data to processing`);
     } else {

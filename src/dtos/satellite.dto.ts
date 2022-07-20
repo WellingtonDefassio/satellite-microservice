@@ -1,5 +1,11 @@
 import { DeviceStatus } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsHexadecimal,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 class DeviceInfoDto {
   @IsNumber()
@@ -15,6 +21,7 @@ export class SendMessageDto {
   deviceId: string;
   @IsNotEmpty()
   @IsString()
+  @IsHexadecimal()
   payload: string;
   device: DeviceInfoDto;
 }

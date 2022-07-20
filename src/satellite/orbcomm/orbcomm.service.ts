@@ -34,8 +34,12 @@ import {
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) { }
 
-  //  @Cron(CronExpression.EVERY_30_SECONDS)
+  
+
+@Cron(CronExpression.EVERY_30_SECONDS)
   async uploadMessage() {
+
+    
    
     const postLink = process.env.POST_LINK_ORBCOMM
     const credentials = { access_id: process.env.ACCESS_ID, password: process.env.PASSWORD }
@@ -72,8 +76,6 @@ export class OrbcommService {
       const messagesToCheck = await findMessagesToCheck(this.prisma)
         .then(arrayExistsValidate('findMessagesToCheck'))
         .then(formatMessagesToCheckOrbcomm(credentials))
-
-        
 
        const apiResponse = await apiRequest(link, ApiMethods.GET, SendedType.PARAM, messagesToCheck, this.http)
 
