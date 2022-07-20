@@ -26,6 +26,7 @@ model OrbcommSendMessages {
   sendMessageId Int                   @unique
   sendMessage   SatelliteSendMessages          @relation(fields: [sendMessageId], references: [id])
   deviceId      String
+  device        Devices?            @relation(fields: [deviceId], references: [deviceId])       
   fwrdMessageId String
   status        OrbcommMessageStatus?
   errorId       Int?                  @default(0)
@@ -43,8 +44,7 @@ model Devices {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   messages         SatelliteSendMessages[]
-  messagesGet      OrbcommGetMessages[]  
-  versionDevice    OrbcommVersionDevice?  
+  messagesOrbcomm  OrbcommSendMessages[]
 
 }
 
@@ -67,7 +67,6 @@ model OrbcommGetMessages {
   messageUTC DateTime
   receiveUTC DateTime
   deviceId       String?
-  device         Devices?            @relation(fields: [deviceId], references: [deviceId])
   SIN Int
   MIN Int
   payload String @db.MediumText
@@ -81,7 +80,6 @@ model OrbcommGetMessages {
 model OrbcommVersionDevice {
   id Int @default(autoincrement()) @id
   deviceId       String? @unique
-  device         Devices?              @relation(fields: [deviceId], references: [deviceId])
   name String
   SIN Int
   MIN Int

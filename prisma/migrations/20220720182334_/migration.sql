@@ -1,29 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the `orbcommgetmessage` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `sendmessages` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `sendmessagesorbcomm` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE `orbcommgetmessage` DROP FOREIGN KEY `OrbcommGetMessage_deviceId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `sendmessages` DROP FOREIGN KEY `SendMessages_deviceId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `sendmessagesorbcomm` DROP FOREIGN KEY `SendMessagesOrbcomm_sendMessageId_fkey`;
-
--- DropTable
-DROP TABLE `orbcommgetmessage`;
-
--- DropTable
-DROP TABLE `sendmessages`;
-
--- DropTable
-DROP TABLE `sendmessagesorbcomm`;
-
 -- CreateTable
 CREATE TABLE `SatelliteSendMessages` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
@@ -52,6 +26,38 @@ CREATE TABLE `OrbcommSendMessages` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Devices` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `deviceId` VARCHAR(191) NOT NULL,
+    `gatewayId` INTEGER NOT NULL,
+    `status` ENUM('ACTIVE', 'DISABLED') NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Devices_deviceId_key`(`deviceId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `SatelliteGateway` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `SatelliteGateway_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `OrbcommNextMessage` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `previousMessage` VARCHAR(191) NOT NULL,
+    `nextMessage` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `OrbcommGetMessages` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `messageId` VARCHAR(191) NOT NULL,
@@ -71,6 +77,19 @@ CREATE TABLE `OrbcommGetMessages` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `OrbcommVersionDevice` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `deviceId` VARCHAR(191) NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `SIN` INTEGER NOT NULL,
+    `MIN` INTEGER NOT NULL,
+    `fields` JSON NOT NULL,
+
+    UNIQUE INDEX `OrbcommVersionDevice_deviceId_key`(`deviceId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `SatelliteSendMessages` ADD CONSTRAINT `SatelliteSendMessages_deviceId_fkey` FOREIGN KEY (`deviceId`) REFERENCES `Devices`(`deviceId`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -78,4 +97,7 @@ ALTER TABLE `SatelliteSendMessages` ADD CONSTRAINT `SatelliteSendMessages_device
 ALTER TABLE `OrbcommSendMessages` ADD CONSTRAINT `OrbcommSendMessages_sendMessageId_fkey` FOREIGN KEY (`sendMessageId`) REFERENCES `SatelliteSendMessages`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `OrbcommGetMessages` ADD CONSTRAINT `OrbcommGetMessages_deviceId_fkey` FOREIGN KEY (`deviceId`) REFERENCES `Devices`(`deviceId`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `OrbcommSendMessages` ADD CONSTRAINT `OrbcommSendMessages_deviceId_fkey` FOREIGN KEY (`deviceId`) REFERENCES `Devices`(`deviceId`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Devices` ADD CONSTRAINT `Devices_gatewayId_fkey` FOREIGN KEY (`gatewayId`) REFERENCES `SatelliteGateway`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -34,9 +34,7 @@ import {
 export class OrbcommService {
   constructor(private prisma: PrismaService, private http: HttpService) { }
 
-  
-
-// @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async uploadMessage() {
     console.log('UPLOAD SERVICE START')
 
@@ -58,14 +56,14 @@ export class OrbcommService {
       const sendMessageOrbcomm = createOrbcommSendMessage(apiResponse, this.prisma)
       const sendMessage = createOrbcomm(apiResponse, this.prisma)
 
-    await processPrisma(...sendMessageOrbcomm, ...sendMessage)(this.prisma)
+      await processPrisma(...sendMessageOrbcomm, ...sendMessage)(this.prisma)
 
     } catch (error) {
       console.log(error.message)
     }
   }
 
-// @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async checkMessages() {
     console.log('CHECK SERVICE START')
 
@@ -78,10 +76,10 @@ export class OrbcommService {
         .then(arrayExistsValidate('findMessagesToCheck'))
         .then(formatMessagesToCheckOrbcomm(credentials))
 
-       const apiResponse = await apiRequest(link, ApiMethods.GET, SendedType.PARAM, messagesToCheck, this.http)
+      const apiResponse = await apiRequest(link, ApiMethods.GET, SendedType.PARAM, messagesToCheck, this.http)
 
-        const updateOrbcomm = updateOrbcommStatus(apiResponse, this.prisma)
-        const updateSatellite = updateSatelliteStatus(apiResponse, this.prisma)
+      const updateOrbcomm = updateOrbcommStatus(apiResponse, this.prisma)
+      const updateSatellite = updateSatelliteStatus(apiResponse, this.prisma)
 
 
       await processPrisma(...updateOrbcomm, ...updateSatellite)(this.prisma)
@@ -91,14 +89,14 @@ export class OrbcommService {
     }
   }
 
- @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
 
     console.log('DOWNLOAD SERVICE START')
 
     const getLink = process.env.GET_ORBCOMM_LINK
     const credentials = { access_id: process.env.ACCESS_ID, password: process.env.PASSWORD }
-    
+
     try {
       const paramToPost =
         await findNextMessage(this.prisma)
@@ -112,21 +110,10 @@ export class OrbcommService {
       const versionMobile = upsertVersionMobile(downloadMessages, this.prisma)
       const getMessages = createGetMessages(downloadMessages, this.prisma)
 
-    await processPrisma(nextMessage, ...versionMobile, ...getMessages)(this.prisma)
+      await processPrisma(nextMessage, ...versionMobile, ...getMessages)(this.prisma)
 
     } catch (error) {
       console.log(error.message)
     }
-  }
-
-  //  @Cron(CronExpression.EVERY_30_SECONDS)
-  async updateDevices() {
-    console.log('DEVICES UPLOAD START.....');
-
-    orbcommDevices(this.http)
-      .then((apiResponse) => verifyNewDevices(apiResponse, this.prisma))
-      .then((newDevices) => createDevicesOrbcomm(newDevices, this.prisma))
-
-      .catch((erro) => console.log(erro.message));
   }
 }
