@@ -65,7 +65,7 @@ export class OrbcommService {
     }
   }
 
-@Cron(CronExpression.EVERY_30_SECONDS)
+// @Cron(CronExpression.EVERY_30_SECONDS)
   async checkMessages() {
     console.log('CHECK SERVICE START')
 
@@ -91,7 +91,7 @@ export class OrbcommService {
     }
   }
 
-@Cron(CronExpression.EVERY_30_SECONDS)
+// @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
 
     console.log('DOWNLOAD SERVICE START')
