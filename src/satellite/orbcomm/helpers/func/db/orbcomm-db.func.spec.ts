@@ -701,7 +701,7 @@ describe('Orbcomm-db-func', () => {
           mockNextMessageCreated,
         ]);
       });
-      it('should throw processPrisma if no data is provide', () => {
+      it('should throw processPrisma if no data is provide', async () => {
         jest
           .spyOn(prisma, '$transaction')
           .mockResolvedValue([
@@ -710,9 +710,9 @@ describe('Orbcomm-db-func', () => {
             mockNextMessageCreated,
           ]);
 
-        expect(
-          functions.processPrisma([], [], [])(prisma),
-        ).rejects.toThrowError('processPrisma() receive no data to persist');
+        expect(() => functions.processPrisma([], [], [])(prisma)).toThrowError(
+          'processPrisma() receive no data to persist',
+        );
       });
     });
   });

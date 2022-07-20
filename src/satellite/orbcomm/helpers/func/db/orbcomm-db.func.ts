@@ -81,26 +81,30 @@ export function upsertVersionMobile(
   downloadMessages: ReceiveDownloadData,
   prisma: PrismaService,
 ): any[] {
-  const messagesWithPayload = filterPayload(downloadMessages);
+  try {
+    const messagesWithPayload = filterPayload(downloadMessages);
 
-  return messagesWithPayload.map((message) => {
-    return prisma.orbcommVersionDevice.upsert({
-      create: {
-        deviceId: message.MobileID,
-        SIN: message.Payload.SIN,
-        MIN: message.Payload.MIN,
-        name: message.Payload.Name,
-        fields: message.Payload.Fields,
-      },
-      where: { deviceId: message.MobileID },
-      update: {
-        SIN: message.Payload.SIN,
-        MIN: message.Payload.MIN,
-        name: message.Payload.Name,
-        fields: message.Payload.Fields,
-      },
+    return messagesWithPayload.map((message) => {
+      return prisma.orbcommVersionDevice.upsert({
+        create: {
+          deviceId: message.MobileID,
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
+        },
+        where: { deviceId: message.MobileID },
+        update: {
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
+        },
+      });
     });
-  });
+  } catch (error) {
+    throw new Error(error.message);
+  }
 }
 
 export function createNextUtc(
@@ -124,27 +128,31 @@ export function createGetMessages(
   downloadMessages: ReceiveDownloadData,
   prisma: PrismaService,
 ): any[] {
-  const formattedMessages = formatGetMessages(downloadMessages);
+  try {
+    const formattedMessages = formatGetMessages(downloadMessages);
 
-  return formattedMessages.map((message) => {
-    return prisma.orbcommGetMessages.create({
-      data: message,
+    return formattedMessages.map((message) => {
+      return prisma.orbcommGetMessages.create({
+        data: message,
+      });
     });
-  });
+  } catch (error) {
+    throw new Error(error.message);
+  }
 }
 
 export function processPrisma(...args: any[]) {
-  const validPrismaPromise = validatePrismaPromise(args);
-  return async function (prisma: PrismaService) {
-    if (!validPrismaPromise.length) {
-      throw new Error('processPrisma() receive no data to persist');
-    }
-    try {
-      return await prisma.$transaction(validPrismaPromise);
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  };
+  try {
+    const validPrismaPromise = validatePrismaPromise(args);
+    return function (prisma: PrismaService) {
+      if (!validPrismaPromise.length) {
+        throw new Error('processPrisma() receive no data to persist');
+      }
+      return prisma.$transaction(validPrismaPromise);
+    };
+  } catch (error) {
+    throw new Error(error.message);
+  }
 }
 
 /**

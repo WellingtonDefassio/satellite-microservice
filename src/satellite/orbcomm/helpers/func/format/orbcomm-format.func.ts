@@ -77,7 +77,7 @@ export function formatMessagesToPostOrbcomm(credentials: {
       messageBodyPost.messages.push({
         DestinationID: message.deviceId,
         UserMessageID: message.id,
-        RawPayload: Buffer.from(message.payload).toJSON().data,
+        RawPayload: hexToBuffer(message.payload),
       }),
     );
     return messageBodyPost;
@@ -100,4 +100,10 @@ export function formatMessagesToCheckOrbcomm(credentials: {
     );
     return messageBodyCheck;
   };
+}
+
+export function hexToBuffer(hex: string) {
+  const result = Buffer.from(hex, 'hex');
+
+  return [...result];
 }
