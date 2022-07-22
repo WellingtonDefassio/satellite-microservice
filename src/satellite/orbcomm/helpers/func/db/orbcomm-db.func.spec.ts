@@ -868,9 +868,9 @@ describe('Orbcomm-db-func', () => {
       });
     });
     describe('updateOrbcommStatus()', () => {
-      jest
-        .spyOn(httpFunctions, 'apiRequest')
-        .mockResolvedValue(mockStatusesResponse);
+      // jest
+      //   .spyOn(httpFunctions, 'apiRequest')
+      //   .mockResolvedValue(mockStatusesResponse);
 
       it('should call sendMessagesOrbcomm.update when updateOrbcommStatus is call', async () => {
         const spyUpdatePrisma = jest.spyOn(
@@ -878,7 +878,7 @@ describe('Orbcomm-db-func', () => {
           'update',
         );
 
-        await service.checkMessages();
+        functions.updateOrbcommStatus(mockStatusesResponse, prisma);
 
         expect(spyUpdatePrisma).toBeCalledTimes(2);
       });
@@ -886,12 +886,13 @@ describe('Orbcomm-db-func', () => {
         jest
           .spyOn(httpFunctions, 'apiRequest')
           .mockResolvedValue(mockStatusesResponseWithOneReturn);
+
         const spyUpdatePrisma = jest.spyOn(
           prisma.orbcommSendMessages,
           'update',
         );
 
-        await service.checkMessages();
+        functions.updateOrbcommStatus(mockStatusesResponse, prisma);
 
         expect(spyUpdatePrisma).toBeCalledWith({
           where: {
@@ -917,9 +918,9 @@ describe('Orbcomm-db-func', () => {
           'update',
         );
 
-        await service.checkMessages();
+        functions.updateSatelliteStatus(mockStatusesResponse, prisma);
 
-        expect(spyUpdateSatellite).toBeCalledTimes(1);
+        expect(spyUpdateSatellite).toBeCalledTimes(2);
       });
       it('should call sendMessages.update with correct params', async () => {
         const spyUpdateSatellite = jest.spyOn(
@@ -927,7 +928,7 @@ describe('Orbcomm-db-func', () => {
           'update',
         );
 
-        await service.checkMessages();
+        functions.updateSatelliteStatus(mockStatusesResponse, prisma);
 
         expect(spyUpdateSatellite).toBeCalledWith({
           where: {

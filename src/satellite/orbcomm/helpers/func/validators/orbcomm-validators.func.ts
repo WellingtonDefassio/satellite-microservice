@@ -1,5 +1,5 @@
 import { MessageStatus, OrbcommMessageStatus } from '@prisma/client';
-import { MessagesPost, ReceiveDownloadData, Submission } from '../../index';
+import { ReceiveDownloadData } from '../../index';
 
 export function convertMessageStatus(
   status: OrbcommMessageStatus,

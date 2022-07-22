@@ -3,63 +3,14 @@ import { OrbcommMessageStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   convertMessageStatus,
-  DeviceApi,
   filterPayload,
   formatGetMessages,
   ForwardStatuses,
   OrbcommStatusMap,
   ReceiveDownloadData,
   Submission,
-  Terminals,
   validatePrismaPromise,
 } from '../../index';
-
-export function verifyNewDevices(
-  apiResponse: DeviceApi,
-  prisma: PrismaService,
-) {
-  const listOfDevices = [];
-  apiResponse.Terminals.forEach((terminal) => {
-    const terminals = prisma.devices.findUnique({
-      where: { deviceId: terminal.PrimeID },
-    });
-    listOfDevices.push(terminals);
-  });
-  return prisma.$transaction(listOfDevices).then((value) => {
-    const newDevices: Terminals[] = [];
-    value.forEach((item, index) => {
-      if (!item) {
-        newDevices.push(apiResponse.Terminals[index]);
-      }
-    });
-    if (!newDevices.length) {
-      throw new Error('No more devices to created');
-    }
-    return newDevices;
-  });
-}
-
-export function createDevicesOrbcomm(
-  apiResponse: Terminals[],
-  prisma: PrismaService,
-) {
-  const orbcommDevicesList = [];
-  apiResponse.forEach((terminal) => {
-    const orbcommDevice = prisma.devices.create({
-      data: {
-        deviceId: terminal.PrimeID,
-        status: 'ACTIVE',
-        satelliteGateway: { connect: { name: 'ORBCOMM_V2' } },
-      },
-    });
-    orbcommDevicesList.push(orbcommDevice);
-  });
-  return prisma.$transaction(orbcommDevicesList);
-}
-
-export function getString(obj) {
-  return obj.nextMessage;
-}
 
 // TESTED!!
 

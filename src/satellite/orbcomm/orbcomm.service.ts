@@ -6,9 +6,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   findNextMessage,
   formatParamsToGetMessages,
-  orbcommDevices,
-  verifyNewDevices,
-  createDevicesOrbcomm,
   validateDownloadData,
   createNextUtc,
   upsertVersionMobile,

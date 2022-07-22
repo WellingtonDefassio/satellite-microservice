@@ -1,17 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { ApiMethods, DeviceApi, SendedType } from '../../index';
-
-export const orbcommDevices = (http: HttpService) => {
-  return new Promise<DeviceApi>((resolve, reject) => {
-    http.axiosRef
-      .get(
-        'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_terminals_info/?access_id=70002657&password=ZFLLYNJL',
-      )
-      .then((value) => {
-        resolve(value.data);
-      });
-  });
-};
+import { ApiMethods, SendedType } from '../../index';
 
 ///TESTED!!
 
