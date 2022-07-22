@@ -246,4 +246,22 @@ describe('OrbcommService', () => {
       });
     });
   });
+  describe('catching error testing', () => {
+    it('should return the message error when axios reject', () => {
+      jest
+        .spyOn(http.axiosRef, 'post')
+        .mockRejectedValueOnce(new Error('MOCKED ERROR'));
+
+      expect(
+        async () =>
+          await functions.apiRequest(
+            'www.any_link.com',
+            ApiMethods.POST,
+            SendedType.BODY,
+            mockSendPostOrbcomm,
+            http,
+          ),
+      ).rejects.toThrowError('MOCKED ERROR');
+    });
+  });
 });

@@ -1,3 +1,4 @@
+import { OrbcommMessageStatus } from '@prisma/client';
 import * as functions from '../../index';
 
 const mockDownloadMessageReturn = {
@@ -310,6 +311,41 @@ describe('Orbcomm-validators', () => {
           functions.arrayExistsValidate(erroDescription)([]),
         ).toThrowError(`${erroDescription} no more data to processing`);
       });
+    });
+  });
+  describe('convertMessageStatus()', () => {
+    it('should return sended case the values receive be received or transmitted', () => {
+      const received = functions.convertMessageStatus('RECEIVED');
+      const transmitted = functions.convertMessageStatus('TRANSMITTED');
+
+      expect(received).toEqual('SENDED');
+      expect(transmitted).toEqual('SENDED');
+    });
+    it('should return submitted case the values receive be submitted or waiting', () => {
+      const submitted = functions.convertMessageStatus('SUBMITTED');
+      const waiting = functions.convertMessageStatus('WAITING');
+
+      expect(submitted).toEqual('SUBMITTED');
+      expect(waiting).toEqual('SUBMITTED');
+    });
+    it('should return timeout case the values receive be timeout', () => {
+      const timeout = functions.convertMessageStatus('TIMEOUT');
+
+      expect(timeout).toEqual('TIMEOUT');
+    });
+    it('should return failed case the values receive be delivery_failed error or invalid', () => {
+      const delivery = functions.convertMessageStatus('DELIVERY_FAILED');
+      const error = functions.convertMessageStatus('ERROR');
+      const invalid = functions.convertMessageStatus('INVALID');
+
+      expect(delivery).toEqual('FAILED');
+      expect(error).toEqual('FAILED');
+      expect(invalid).toEqual('FAILED');
+    });
+    it('should return canceled case the values receive be canceled', () => {
+      const canceled = functions.convertMessageStatus('CANCELLED');
+
+      expect(canceled).toEqual('CANCELLED');
     });
   });
 });

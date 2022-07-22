@@ -19,8 +19,6 @@ export function convertMessageStatus(
       return 'FAILED';
     case 'CANCELLED':
       return 'CANCELLED';
-    default:
-      break;
   }
 }
 

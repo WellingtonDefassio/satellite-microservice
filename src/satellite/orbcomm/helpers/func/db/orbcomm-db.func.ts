@@ -32,30 +32,26 @@ export function upsertVersionMobile(
   downloadMessages: ReceiveDownloadData,
   prisma: PrismaService,
 ): any[] {
-  try {
-    const messagesWithPayload = filterPayload(downloadMessages);
+  const messagesWithPayload = filterPayload(downloadMessages);
 
-    return messagesWithPayload.map((message) => {
-      return prisma.orbcommVersionDevice.upsert({
-        create: {
-          deviceId: message.MobileID,
-          SIN: message.Payload.SIN,
-          MIN: message.Payload.MIN,
-          name: message.Payload.Name,
-          fields: message.Payload.Fields,
-        },
-        where: { deviceId: message.MobileID },
-        update: {
-          SIN: message.Payload.SIN,
-          MIN: message.Payload.MIN,
-          name: message.Payload.Name,
-          fields: message.Payload.Fields,
-        },
-      });
+  return messagesWithPayload.map((message) => {
+    return prisma.orbcommVersionDevice.upsert({
+      create: {
+        deviceId: message.MobileID,
+        SIN: message.Payload.SIN,
+        MIN: message.Payload.MIN,
+        name: message.Payload.Name,
+        fields: message.Payload.Fields,
+      },
+      where: { deviceId: message.MobileID },
+      update: {
+        SIN: message.Payload.SIN,
+        MIN: message.Payload.MIN,
+        name: message.Payload.Name,
+        fields: message.Payload.Fields,
+      },
     });
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  });
 }
 
 export function createNextUtc(
@@ -63,47 +59,35 @@ export function createNextUtc(
   nextMessage: string,
   prisma: PrismaService,
 ): any {
-  try {
-    return prisma.orbcommNextMessage.create({
-      data: {
-        previousMessage,
-        nextMessage,
-      },
-    });
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  return prisma.orbcommNextMessage.create({
+    data: {
+      previousMessage,
+      nextMessage,
+    },
+  });
 }
 
 export function createGetMessages(
   downloadMessages: ReceiveDownloadData,
   prisma: PrismaService,
 ): any[] {
-  try {
-    const formattedMessages = formatGetMessages(downloadMessages);
+  const formattedMessages = formatGetMessages(downloadMessages);
 
-    return formattedMessages.map((message) => {
-      return prisma.orbcommGetMessages.create({
-        data: message,
-      });
+  return formattedMessages.map((message) => {
+    return prisma.orbcommGetMessages.create({
+      data: message,
     });
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  });
 }
 
 export function processPrisma(...args: any[]) {
-  try {
-    const validPrismaPromise = validatePrismaPromise(args);
-    return function (prisma: PrismaService) {
-      if (!validPrismaPromise.length) {
-        throw new Error('processPrisma() receive no data to persist');
-      }
-      return prisma.$transaction(validPrismaPromise);
-    };
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  const validPrismaPromise = validatePrismaPromise(args);
+  return function (prisma: PrismaService) {
+    if (!validPrismaPromise.length) {
+      throw new Error('processPrisma() receive no data to persist');
+    }
+    return prisma.$transaction(validPrismaPromise);
+  };
 }
 
 /**
@@ -136,43 +120,35 @@ export function createOrbcommSendMessage(
   messages: Submission[],
   prisma: PrismaService,
 ): any[] {
-  try {
-    return messages.map((message) => {
-      return prisma.orbcommSendMessages.create({
-        data: {
-          sendMessageId: message.UserMessageID,
-          deviceId: message.DestinationID,
-          fwrdMessageId: message.ForwardMessageID.toString(),
-          errorId: message.ErrorID,
-          status: OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
-        },
-      });
+  return messages.map((message) => {
+    return prisma.orbcommSendMessages.create({
+      data: {
+        sendMessageId: message.UserMessageID,
+        deviceId: message.DestinationID,
+        fwrdMessageId: message.ForwardMessageID.toString(),
+        errorId: message.ErrorID,
+        status: OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+      },
     });
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  });
 }
 
 export function createOrbcomm(
   messages: Submission[],
   prisma: PrismaService,
 ): any[] {
-  try {
-    return messages.map((message) => {
-      return prisma.satelliteSendMessages.update({
-        where: { id: message.UserMessageID },
-        data: {
-          status: {
-            set: convertMessageStatus(
-              OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
-            ),
-          },
+  return messages.map((message) => {
+    return prisma.satelliteSendMessages.update({
+      where: { id: message.UserMessageID },
+      data: {
+        status: {
+          set: convertMessageStatus(
+            OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
+          ),
         },
-      });
+      },
     });
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  });
 }
 
 export async function findMessagesToCheck(prisma: PrismaService) {
