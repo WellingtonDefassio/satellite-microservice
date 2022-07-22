@@ -3,6 +3,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FetchByDeviceID } from '../pipes/transform-device.pipe';
 import { SatelliteController } from './satellite.controller';
 import { SatelliteService } from './satellite.service';
+import { DeviceStatus } from '@prisma/client';
+
+const mockResolvedBody = {
+  deviceId: 'mockDeviceId',
+  payload: '1020304050',
+  device: { id: 1, deviceId: 1, status: DeviceStatus.ACTIVE },
+};
 
 describe('SatelliteController', () => {
   let controller: SatelliteController;
@@ -24,6 +31,14 @@ describe('SatelliteController', () => {
             transform: jest.fn().mockReturnValue([]),
           },
         },
+        {
+          provide: PrismaService,
+          useValue: {
+            devices: {
+              findUnique: jest.fn().mockResolvedValue([]),
+            },
+          },
+        },
       ],
     }).compile();
 
@@ -31,6 +46,28 @@ describe('SatelliteController', () => {
     controller = module.get<SatelliteController>(SatelliteController);
   });
   describe('sendMessage()', () => {
-    it('should ??', () => {});
+    it('should call service.sendMessages when controller.sendMessages is call', () => {
+      const spyService = jest.spyOn(service, 'sendMessage');
+
+      controller.sendMessage(mockResolvedBody);
+
+      expect(spyService).toBeCalledTimes(1);
+    });
+    it('should call service.sendMessages when controller.sendMessages to be called with', () => {
+      const spyService = jest.spyOn(service, 'sendMessage');
+
+      controller.sendMessage(mockResolvedBody);
+
+      expect(spyService).toBeCalledWith(mockResolvedBody);
+    });
+    it('should call service.sendMessages when controller.sendMessages to be called with', () => {
+      jest
+        .spyOn(service, 'sendMessage')
+        .mockRejectedValueOnce(new Error('service error'));
+
+      expect(controller.sendMessage(mockResolvedBody)).rejects.toThrow(
+        'service error',
+      );
+    });
   });
 });
