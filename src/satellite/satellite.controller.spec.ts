@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
-import { FetchByDeviceID } from '../pipes/transform-device.pipe';
+import { FetchDevice } from '../pipes/transform-device.pipe';
 import { SatelliteController } from './satellite.controller';
 import { SatelliteService } from './satellite.service';
 import { DeviceStatus } from '@prisma/client';
@@ -26,7 +26,7 @@ describe('SatelliteController', () => {
           },
         },
         {
-          provide: FetchByDeviceID,
+          provide: FetchDevice,
           useValue: {
             transform: jest.fn().mockReturnValue([]),
           },
