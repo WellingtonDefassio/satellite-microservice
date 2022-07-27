@@ -3,7 +3,7 @@ import { SatelliteService } from './satellite.service';
 import { SatelliteController } from './satellite.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { HttpModule } from '@nestjs/axios';
-import { OrbcommService } from './orbcomm/orbcomm.service';
+import { OrbcommService } from './api/orbcomm_v2/orbcomm.service';
 
 @Module({
   providers: [SatelliteService, OrbcommService],

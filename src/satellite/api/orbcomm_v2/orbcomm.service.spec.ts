@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import { OrbcommService } from './orbcomm.service';
 import * as dbFunctions from './helpers/func/db/orbcomm-db.func';
 import * as formatFunctions from './helpers/func/format/orbcomm-format.func';

@@ -12,7 +12,7 @@ interface bodyParams {
 }
 
 @Injectable()
-export class FetchByDeviceID implements PipeTransform {
+export class FetchDevice implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(body: bodyParams, metadata: ArgumentMetadata) {

@@ -8,7 +8,7 @@ export class SatelliteService {
 
   async sendMessage(body: SendMessageDto) {
     try {
-      await this.prisma.satelliteSendMessages.create({
+      return await this.prisma.satelliteSendMessages.create({
         data: {
           payload: body.payload,
           device: { connect: { deviceId: body.deviceId } },

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { FetchByDeviceID } from '../pipes/transform-device.pipe';
+import { FetchDevice } from '../pipes/transform-device.pipe';
 import { PrismaService } from './prisma.service';
 
 @Module({
-  providers: [PrismaService, FetchByDeviceID],
+  providers: [PrismaService, FetchDevice],
   exports: [PrismaService],
   imports: [PrismaModule],
 })

@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '../../../../../prisma/prisma.service';
+import { PrismaService } from '../../../../../../prisma/prisma.service';
 import * as functions from '../../index';
 import { OrbcommService } from '../../../orbcomm.service';
 import { ApiMethods, SendedType } from '../../index';

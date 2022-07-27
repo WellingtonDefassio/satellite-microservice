@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { OrbcommService } from './orbcomm/orbcomm.service';
+import { OrbcommService } from './api/orbcomm_v2/orbcomm.service';
 import { SatelliteModule } from './satellite.module';
 import { SatelliteService } from './satellite.service';
 

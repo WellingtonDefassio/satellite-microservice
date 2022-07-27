@@ -1,15 +1,18 @@
 import { Body, Controller, Post, UsePipes } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { SerializeResponse } from 'src/interceptor/serialize-response.interceptor';
 import { SendMessageDto } from '../dtos/satellite.dto';
-import { FetchByDeviceID } from '../pipes/transform-device.pipe';
+import { FetchDevice } from '../pipes/transform-device.pipe';
+import { ResponseMessageDto } from './dto/response-message.dto';
 import { SatelliteService } from './satellite.service';
 
+@Throttle(3, 30)
 @Controller('satellite')
 export class SatelliteController {
   constructor(private satelliteService: SatelliteService) {}
 
-  @Throttle(3, 30)
-  @UsePipes(FetchByDeviceID)
+  @UsePipes(FetchDevice)
+  @SerializeResponse(ResponseMessageDto)
   @Post('messages')
   async sendMessage(@Body() body: SendMessageDto) {
     try {

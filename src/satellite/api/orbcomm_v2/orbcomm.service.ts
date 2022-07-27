@@ -2,7 +2,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import {
   findNextMessage,
   formatParamsToGetMessages,
@@ -86,7 +86,7 @@ export class OrbcommService {
     }
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
 
     console.log('DOWNLOAD SERVICE START')
